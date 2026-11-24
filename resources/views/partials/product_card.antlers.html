@@ -8,14 +8,16 @@
                 class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.03]"
             >
         {{ /featured_image }}
-        {{ gallery limit="1" offset="1" }}
+        {{# hover image: the second gallery image, when there is one #}}
+        {{ gallery_paths = gallery | raw }}
+        {{ if gallery_paths:1 }}
             <img
-                src="{{ glide:url width="640" height="800" fit="crop_focal" }}"
+                src="{{ glide src="shopify::{gallery_paths:1}" width="640" height="800" fit="crop_focal" }}"
                 alt=""
                 loading="lazy"
                 class="absolute inset-0 size-full object-cover opacity-0 transition duration-700 group-hover:opacity-100"
             >
-        {{ /gallery }}
+        {{ /if }}
 
         <div class="absolute top-3 left-3 flex gap-1.5">
             {{ if ! in_stock }}
