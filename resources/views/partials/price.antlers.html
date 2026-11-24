@@ -1,0 +1,15 @@
+{{#
+    A product's price, from the stock/price summary the addon stores on each product.
+    In markets mode each market's price is rendered (from the variants' market_data)
+    and the shopper's market is shown.
+#}}
+{{ if config:shopify.multi_store.enabled }}
+    {{ markets = config:shopify.multi_store.markets }}
+    {{ foreach:markets }}
+        <span x-show="$store.market.code === '{{ key }}'" {{ key != config:shopify.multi_store.default_market ?= 'x-cloak' }}>
+            {{ shopify:product_price :slug="slug" :store="key" show_from="true" }}
+        </span>
+    {{ /foreach:markets }}
+{{ else }}
+    {{ shopify:product_price show_from="true" }}
+{{ /if }}

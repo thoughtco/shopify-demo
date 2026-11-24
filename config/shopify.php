@@ -1,5 +1,8 @@
 <?php
 
+use Thoughtco\Shopify\Actions\ParseMetafields;
+use Thoughtco\Shopify\Jobs\CreateOrUpdateShopifyUser;
+
 return [
     /**
      * Site URL
@@ -7,24 +10,31 @@ return [
     'url' => env('SHOPIFY_APP_URL'),
 
     /**
+     * If you use a different customer facing url (eg store.mycustomdomain.com)
+     * please enter that here
+     */
+    'storefront_url' => env('SHOPIFY_STOREFRONT_URL'),
+
+    /**
+     * Client ID
+     */
+    'client_id' => env('SHOPIFY_CLIENT_ID'),
+
+    /**
+     * Client Secret
+     */
+    'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
+
+    /**
+     * Admin API access token for legacy custom apps created in the Shopify admin.
+     * Used instead of the client ID / secret when set.
+     */
+    'admin_token' => env('SHOPIFY_ADMIN_TOKEN'),
+
+    /**
      * Front-end storefront token
      */
     'storefront_token' => env('SHOPIFY_STOREFRONT_TOKEN'),
-
-    /**
-     * Admin API Auth Key
-     */
-    'auth_key' => env('SHOPIFY_AUTH_KEY'),
-
-    /**
-     * Admin API Auth Password
-     */
-    'auth_password' => env('SHOPIFY_AUTH_PASSWORD'),
-
-    /**
-     * Admin Access Token
-     */
-    'admin_token' => env('SHOPIFY_ADMIN_TOKEN'),
 
     /**
      * If using WebHooks make sure you have added the secret that they are signed with here
@@ -39,33 +49,59 @@ return [
         'content' => true,
         'vendor' => true,
         'type' => true,
-        'tags' => true
+        'tags' => true,
     ],
 
     /**
-     * Admin API Limit - Lower this if you bump into issues.
+     * Admin API version - Set this to a fixed value (eg 2026-01)
      */
-    'api_limit' => 30,
+    'api_version' => env('SHOPIFY_API_VERSION', '2026-01'),
 
     /**
-     * Shop Currency
+     * How many times to retry an Admin API request that fails with a 429 or 5xx response
+     */
+    'api_max_retries' => env('SHOPIFY_API_MAX_RETRIES', 2),
+
+    /**
+     * Seconds to wait for an Admin API response before giving up (and retrying)
+     */
+    'api_timeout' => env('SHOPIFY_API_TIMEOUT', 30),
+
+    /**
+     * Imports pause when the available GraphQL query cost budget drops below this
+     * many points, giving the bucket time to refill
+     */
+    'throttle_threshold' => env('SHOPIFY_THROTTLE_THRESHOLD', 500),
+
+    /**
+     * Shop currency: `currency` is the symbol used by the default 'symbol' money
+     * format, and `currency_code` the ISO 4217 code (e.g. GBP) used by 'intl'.
      */
     'currency' => '£',
+    'currency_code' => env('SHOPIFY_CURRENCY_CODE'),
 
     /**
-     * Change some of the language variables used in the tags
+     * How {{ shopify:product_price }} and the bundled cart JS format prices.
+     *
+     * 'symbol' (default): the currency symbol and the amount to 2 decimal places, e.g. £1234.50
+     * 'intl': formatted for the site's locale and currency, e.g. £1,234.50, 1.234,50 €, ¥1,235
+     *         (needs `currency_code`; server side it also needs PHP's intl extension)
      */
-    'lang' => [
-        'out_of_stock' => 'Out of Stock',
-        'from' => 'From'
-    ],
+    'money_format' => env('SHOPIFY_MONEY_FORMAT', 'symbol'),
 
     /**
      * Asset Container to Store the imported Assets
      */
     'asset' => [
-        'path' => env('SHOPIFY_ASSET_PATH', 'shopify'),
+        'path' => env('SHOPIFY_ASSET_PATH', ''),
         'container' => env('SHOPIFY_ASSET_CONTAINER', 'shopify'),
+
+        /**
+         * When Shopify serves a product image under a new file name, the new
+         * asset replaces the old one everywhere it's used. Set this to delete
+         * the old asset too (like Statamic's "Replace" action's option).
+         */
+        'delete_replaced' => env('SHOPIFY_ASSET_DELETE_REPLACED', false),
     ],
 
     /**
@@ -80,8 +116,117 @@ return [
     ],
 
     /**
-     * The queue connection you want the Shopify jobs to run on.
-     * Please note you having more than 1 process running at once on this queue may cause issues.
+     * The queue you want the Shopify jobs to run on. Imports of the same product never
+     * run at the same time, so it is safe to run several workers on this queue.
      */
-    'queue' => env('SHOPIFY_JOB_QUEUE', 'default')
+    'queue' => env('SHOPIFY_JOB_QUEUE', 'default'),
+
+    /**
+     * What class should we use to parse metafields
+     */
+    'metafields_parser' => ParseMetafields::class,
+
+    /**
+     * If a new user is created by Shopify should the website create
+     * a matching user account for them?
+     */
+    'create_users_from_shopify' => false,
+
+    /**
+     * If a user is created or modified in Statamic, should we create/update that user in Shopify?
+     */
+    'update_users_in_shopify' => false,
+
+    /**
+     * What job should we use to update users in Shopify
+     */
+    'update_shopify_user_job' => CreateOrUpdateShopifyUser::class,
+
+    /**
+     * In which collection should the Shopify products be created
+     */
+    'collection_handle' => env('SHOPIFY_COLLECTION_HANDLE', 'products'),
+
+    /**
+     * What Sales Channel in Shopify should be used to determine the product availablity
+     * (ensure this matches exactly)
+     */
+    'sales_channel' => env('SHOPIFY_SALES_CHANNEL', 'Online Store'),
+
+    /**
+     * When true (default), all products are imported regardless of sales channel membership.
+     * When false, only products assigned to the configured sales_channel are imported.
+     * Products previously imported that are no longer on the sales channel will be deleted.
+     */
+    'import_all_products' => true,
+
+    /**
+     * When a product is in a Shopify collection that hasn't been imported yet, queue an
+     * import for that collection (default). When false, products only get collections
+     * that have already been imported (run shopify:import:collections).
+     */
+    'import_missing_collections' => env('SHOPIFY_IMPORT_MISSING_COLLECTIONS', true),
+
+    /**
+     * The activity log records every webhook received and every import run (from
+     * webhooks, the control panel or the command line), shown under Shopify > Activity.
+     *
+     * driver: 'file' stores entries under storage/statamic/shopify/activity (single server).
+     *         'database' stores them in a table (run `php artisan migrate`), which you'll
+     *         need when several servers or queue workers write to the log.
+     */
+    'activity' => [
+        'enabled' => env('SHOPIFY_ACTIVITY_ENABLED', true),
+        'driver' => env('SHOPIFY_ACTIVITY_DRIVER', 'file'),
+        'connection' => env('SHOPIFY_ACTIVITY_DB_CONNECTION'),
+        'table' => env('SHOPIFY_ACTIVITY_TABLE', 'shopify_activity'),
+        'path' => storage_path('statamic/shopify/activity'),
+        'retention_days' => env('SHOPIFY_ACTIVITY_RETENTION_DAYS', 30),
+    ],
+
+    /**
+     * Multi-store configuration.
+     * When enabled, the package supports multiple Shopify stores.
+     * mode: 'unified'   – all stores share one set of product/variant entries;
+     *                     store-specific pricing/stock is stored under multi_store_data.
+     * mode: 'localized' – each store maps to a Statamic site handle; variants are per-site.
+     * mode: 'markets'   – single store with territory-specific pricing via Shopify Markets
+     *                     (contextualPricing); market data stored under market_data keyed by country code.
+     */
+    'multi_store' => [
+        'enabled' => env('SHOPIFY_MULTI_STORE_ENABLED', false),
+        'mode' => env('SHOPIFY_MULTI_STORE_MODE', 'unified'), // 'unified' | 'localized' | 'markets'
+        'markets' => [
+            // Country-code keys used in 'markets' mode. The demo theme also reads
+            // 'name' and 'flag' for its country switcher.
+            'GB' => ['currency' => '£', 'currency_code' => 'GBP', 'name' => 'United Kingdom', 'flag' => '🇬🇧'],
+            'IE' => ['currency' => '€', 'currency_code' => 'EUR', 'name' => 'Ireland', 'flag' => '🇮🇪'],
+            'US' => ['currency' => '$', 'currency_code' => 'USD', 'name' => 'United States', 'flag' => '🇺🇸'],
+        ],
+
+        // The demo theme's starting market (shopify:tokens store="...")
+        'default_market' => 'GB',
+        'primary_store' => env('SHOPIFY_MULTI_STORE_PRIMARY'), // handle of the primary store
+
+        // With update_users_in_shopify, a user saved in Statamic is updated in each store
+        // they're linked to. Someone not linked to any store yet is created in this store
+        // (defaults to the primary store). Not used in markets mode, which has one store.
+        'customer_store' => env('SHOPIFY_MULTI_STORE_CUSTOMER_STORE'),
+        'stores' => [
+            // Each key is the store handle used throughout the system.
+            // 'uk' => [
+            //     'url' => env('SHOPIFY_STORE_UK_URL'),
+            //     'storefront_token' => env('SHOPIFY_STORE_UK_STOREFRONT_TOKEN'),
+            //     'webhook_secret' => env('SHOPIFY_STORE_UK_WEBHOOK_SECRET'),
+            //     'client_id' => env('SHOPIFY_STORE_UK_CLIENT_ID'),
+            //     'client_secret' => env('SHOPIFY_STORE_UK_CLIENT_SECRET'),
+            //     'admin_token' => env('SHOPIFY_STORE_UK_ADMIN_TOKEN'),
+            //     'api_version' => env('SHOPIFY_STORE_UK_API_VERSION', '2026-01'),
+            //     'sales_channel' => 'Online Store',
+            //     'currency' => '£',
+            //     'currency_code' => 'GBP',
+            //     'site' => 'en', // only used in 'localized' mode
+            // ],
+        ],
+    ],
 ];

@@ -1,102 +1,185 @@
+hide: true
 title: Variant
-sections:
+tabs:
   main:
     display: Main
-    fields:
+    sections:
       -
-        handle: title
-        field:
-          type: text
-          required: true
-          validate:
-            - required
-      -
-        handle: slug
-        field:
-          type: disabled_text
-          localizable: true
-          required: true
-          icon: disabled_text
-          display: 'Variant ID'
-          validate:
-            - required
-            - 'new \Statamic\Rules\UniqueEntryValue({collection}, {id}, {site})'
-          width: 50
-      -
-        handle: sku
-        field:
-          display: SKU
-          type: disabled_text
-          icon: lock
-          width: 50
-          listable: hidden
-      -
-        handle: product_slug
-        field:
-          type: hidden
-          listable: hidden
-          antlers: false
-          display: 'Product Slug'
-      -
-        handle: price
-        field:
-          display: Price
-          type: disabled_text
-          icon: disabled_text
-          listable: hidden
-          validate:
-            - required
-          width: 33
-      -
-        handle: inventory_quantity
-        field:
-          type: disabled_text
-          icon: disabled_text
-          antlers: false
-          display: Stock
-          listable: hidden
-          validate:
-            - nullable
-            - numeric
-          width: 33
-      -
-        handle: grams
-        field:
-          display: 'Weight (Grams)'
-          type: disabled_text
-          icon: disabled_text
-          width: 33
-          listable: hidden
-      -
-        handle: option1
-        field:
-          antlers: false
-          display: 'Option 1'
-          type: disabled_text
-          icon: disabled_text
-          width: 33
-          listable: hidden
-      -
-        handle: option2
-        field:
-          antlers: false
-          display: 'Option 2'
-          type: disabled_text
-          icon: disabled_text
-          width: 33
-          listable: hidden
-      -
-        handle: option3
-        field:
-          display: 'Option 3'
-          type: disabled_text
-          icon: disabled_text
-          width: 33
-          listable: hidden
-      -
-        handle: requires_shipping
-        field:
-          display: 'Requires Shipping'
-          type: toggle
-          icon: toggle
-          listable: hidden
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+              validate:
+                - required
+          -
+            handle: slug
+            field:
+              type: disabled_text
+              localizable: true
+              validate:
+                - required
+                - 'new \Statamic\Rules\UniqueEntryValue({collection}, {id}, {site})'
+              icon: disabled_text
+              display: 'Variant ID'
+              width: 50
+          -
+            handle: sku
+            field:
+              display: SKU
+              type: disabled_text
+              icon: lock
+              width: 50
+              listable: hidden
+          -
+            handle: product_slug
+            field:
+              type: hidden
+              listable: hidden
+              antlers: false
+              display: 'Product Slug'
+          -
+            handle: price
+            field:
+              display: Price
+              type: disabled_text
+              icon: disabled_text
+              listable: hidden
+              validate:
+                - required
+              width: 50
+          -
+            handle: compare_at_price
+            field:
+              display: 'Compare At Price'
+              type: disabled_text
+              icon: disabled_text
+              listable: hidden
+              width: 50
+          -
+            handle: inventory_quantity
+            field:
+              type: disabled_text
+              icon: disabled_text
+              antlers: false
+              display: Stock
+              listable: hidden
+              validate:
+                - nullable
+                - numeric
+              width: 50
+          -
+            handle: requires_shipping
+            field:
+              display: 'Requires Shipping'
+              type: toggle
+              icon: toggle
+              listable: hidden
+              width: 50
+          -
+            handle: option1
+            field:
+              antlers: false
+              display: 'Option 1'
+              type: disabled_text
+              icon: disabled_text
+              width: 33
+              listable: hidden
+          -
+            handle: option2
+            field:
+              antlers: false
+              display: 'Option 2'
+              type: disabled_text
+              icon: disabled_text
+              width: 33
+              listable: hidden
+          -
+            handle: option3
+            field:
+              display: 'Option 3'
+              type: disabled_text
+              icon: disabled_text
+              width: 33
+              listable: hidden
+          -
+            handle: weight
+            field:
+              fullscreen: false
+              border: false
+              type: group
+              width: 66
+              sortable: false
+              replicator_preview: false
+              fields:
+                -
+                  handle: value
+                  field:
+                    hide_display: true
+                    type: disabled_text
+                    display: Amount
+                    width: 33
+                -
+                  handle: unit
+                  field:
+                    hide_display: true
+                    type: disabled_text
+                    display: Unit
+                    width: 33
+          -
+            handle: variant_id
+            field:
+              display: 'Variant ID'
+              type: hidden
+              icon: hidden
+              listable: hidden
+              instructions_position: above
+          -
+            handle: inventory_policy
+            field:
+              display: 'Inventory Policy'
+              type: hidden
+              icon: hidden
+              listable: hidden
+              instructions_position: above
+          -
+            handle: inventory_management
+            field:
+              display: 'Inventory Management'
+              type: hidden
+              icon: hidden
+              listable: hidden
+              instructions_position: above
+          -
+            handle: image
+            field:
+              mode: grid
+              restrict: false
+              allow_uploads: true
+              display: Image
+              type: assets
+              icon: assets
+              listable: hidden
+              container: shopify
+              max_files: 1
+          -
+            handle: gallery
+            field:
+              mode: grid
+              restrict: false
+              allow_uploads: true
+              display: Gallery
+              type: assets
+              icon: assets
+              listable: hidden
+              container: shopify
+          -
+            handle: market_data
+            field:
+              display: 'Market Pricing'
+              type: array
+              icon: array
+              listable: hidden
+              instructions_position: above
+              visibility: read_only

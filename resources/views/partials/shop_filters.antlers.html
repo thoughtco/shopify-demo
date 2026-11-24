@@ -1,0 +1,26 @@
+{{# Filter chips: product type (a taxonomy synced from Shopify), stock and sort order #}}
+<div class="mt-10 flex flex-wrap items-center justify-between gap-4 border-y border-ink/10 py-4">
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ current_url }}?{{ get_string | remove_query_param('type') }}" class="chip" aria-current="{{ ! get:type ? 'true' : 'false' }}">All</a>
+        {{ taxonomy:type sort="title" }}
+            <a href="{{ current_url }}?type={{ slug }}{{ get:in_stock ?= '&in_stock=1' }}{{ get:sort ?= '&sort={get:sort}' }}" class="chip" aria-current="{{ get:type == slug ? 'true' : 'false' }}">{{ title }}</a>
+        {{ /taxonomy:type }}
+    </div>
+
+    <form method="get" class="flex flex-wrap items-center gap-4 text-sm" x-data @change="$el.submit()">
+        {{ if get:type }}<input type="hidden" name="type" value="{{ get:type }}">{{ /if }}
+        <label class="inline-flex cursor-pointer items-center gap-2">
+            <input type="checkbox" name="in_stock" value="1" class="size-4 accent-ink" {{ get:in_stock ?= 'checked' }}>
+            In stock only
+        </label>
+        <label class="inline-flex items-center gap-2">
+            <span class="text-stone">Sort</span>
+            <select name="sort" class="rounded-full border border-ink/15 bg-white py-1.5 pr-8 pl-3">
+                <option value="published_at:desc" {{ get:sort == 'published_at:desc' || ! get:sort ?= 'selected' }}>Newest</option>
+                <option value="price_min:asc" {{ get:sort == 'price_min:asc' ?= 'selected' }}>Price, low to high</option>
+                <option value="price_max:desc" {{ get:sort == 'price_max:desc' ?= 'selected' }}>Price, high to low</option>
+                <option value="title:asc" {{ get:sort == 'title:asc' ?= 'selected' }}>A–Z</option>
+            </select>
+        </label>
+    </form>
+</div>

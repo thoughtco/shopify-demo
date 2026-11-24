@@ -1,0 +1,42 @@
+title: 'How it works'
+hide: true
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field: { type: text, required: true }
+          -
+            handle: intro
+            field: { type: textarea, display: Intro }
+          -
+            handle: steps
+            field:
+              type: grid
+              display: Steps
+              fields:
+                - { handle: title, field: { type: text } }
+                - { handle: text, field: { type: textarea } }
+          -
+            handle: content
+            field: { type: bard, buttons: [h2, h3, bold, italic, unorderedlist, orderedlist, link, code], save_html: false }
+          -
+            handle: features
+            field:
+              type: grid
+              display: 'Features on show'
+              fields:
+                - { handle: title, field: { type: text } }
+                - { handle: text, field: { type: textarea } }
+                - { handle: link, field: { type: text } }
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          -
+            handle: slug
+            field: { type: slug }

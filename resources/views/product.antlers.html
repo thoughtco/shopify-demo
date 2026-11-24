@@ -1,84 +1,183 @@
+{{ variants = {shopify:variants} }}
+{{ images = gallery ?? featured_image }}
 
-<div class="container max-w-4xl mx-auto">
-    <a href="/shop" class="flex mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 mr-2">
-            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-        </svg>
+<div
+    class="container-page pt-6 pb-16"
+    x-data='shopifyProduct({{ options ? (options | to_json) : "{}" }}, {{ variants ? (variants | to_json) : "[]" }})'
+>
+    <nav class="flex items-center gap-2 text-sm text-stone" aria-label="Breadcrumb">
+        <a href="/shop" class="hover:text-ink">Shop</a>
+        {{ if collections }}
+            {{ collections limit="1" }}
+                <span>/</span><a href="/collections/{{ slug }}" class="hover:text-ink">{{ title }}</a>
+            {{ /collections }}
+        {{ /if }}
+        <span>/</span><span class="text-ink">{{ title }}</span>
+    </nav>
 
-        Back to all products
-    </a>
+    <div class="mt-6 grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-16">
+        {{# Gallery: the product's Shopify images; picking a variant shows its image #}}
+        <div
+            x-data='gallery({{ images | pluck("url") | to_json }})'
+            x-effect="selectedVariant?.image?.url && show(selectedVariant.image.url)"
+            class="min-w-0"
+        >
+            <div class="relative aspect-[4/5] overflow-hidden rounded-[1.75rem] bg-sand">
+                {{ images }}
+                    <img
+                        src="{{ glide:url width="1100" height="1375" fit="crop_focal" }}"
+                        alt="{{ alt ?? title }}"
+                        class="absolute inset-0 size-full object-cover transition duration-500"
+                        :class="active === {{ index }} ? 'opacity-100' : 'opacity-0'"
+                        {{ index > 0 ?= 'loading="lazy"' }}
+                    >
+                {{ /images }}
+            </div>
 
-    <h1 class="mb-10 text-5xl font-bold leading-tight tracking-tighter">{{ title }}</h1>
-
-    <div class="md:grid md:grid-cols-2 md:gap-10">
-        <div class="mb-6 grid-cell md:mb-0">
-            <picture class="relative block overflow-hidden shadow-lg aspect-square rounded-3xl">
-                {{ featured_image }}
-                    <img class="absolute object-cover w-full h-full" src="{{ url }}" alt="{{ alt }}">
-                {{ /featured_image }}
-            </picture>
+            {{ if images | length > 1 }}
+                <div class="mt-4 grid grid-cols-5 gap-3">
+                    {{ images }}
+                        <button
+                            type="button"
+                            class="aspect-square overflow-hidden rounded-xl bg-sand ring-offset-2 ring-offset-ivory transition"
+                            :class="active === {{ index }} ? 'ring-2 ring-ink' : 'opacity-70 hover:opacity-100'"
+                            @click="active = {{ index }}"
+                            aria-label="Show image {{ count }}"
+                        >
+                            <img src="{{ glide:url width="200" height="200" fit="crop_focal" }}" alt="" class="size-full object-cover">
+                        </button>
+                    {{ /images }}
+                </div>
+            {{ /if }}
         </div>
 
-        {{ $variants = {shopify:variants} }}
-        <div class="grid-cell" x-data='shopifyProduct({{ options | to_json }}, {{ variants | to_json }})'>
-            <div class="mb-8 prose">{{ content }}</div>
+        <div class="min-w-0 lg:py-4">
+            {{ vendor limit="1" }}<a href="/vendor/{{ slug }}" class="eyebrow hover:text-ink">{{ title }}</a>{{ /vendor }}
+            <h1 class="mt-3 font-serif text-4xl leading-tight tracking-tight text-balance sm:text-5xl">{{ title }}</h1>
 
-            {{ if type }}
-                <div class="flex py-3 text-sm border-t border-b">
-                    <span class="mr-3 font-medium">Types</span>
-                    <span>
-                    {{ type }}
-                        <a href="{{ url }}" class="hover:text-indigo-700">{{ title | ucfirst }}</a>
-                    {{ /type }}
-                    </span>
+            {{# Price for the selected variant, in the shopper's market #}}
+            <div class="mt-5 flex items-baseline gap-3" x-data="{
+                compareAt(variant) {
+                    const value = getMarketData(variant)?.compare_at_price ?? variant?.compare_at_price;
+                    return value && parseFloat(value) > parseFloat(getVariantPrice(variant)) ? value : null;
+                },
+            }">
+                <p class="text-2xl" x-text="selectedVariant && $store.market.format(getVariantPrice(selectedVariant))">{{ partial:partials/price }}</p>
+                <template x-if="compareAt(selectedVariant)">
+                    <p class="flex items-baseline gap-3">
+                        <s class="text-stone" x-text="$store.market.format(compareAt(selectedVariant))"></s>
+                        <span class="rounded-full bg-rose px-2.5 py-0.5 text-xs font-medium text-white">Sale</span>
+                    </p>
+                </template>
+            </div>
+
+            <div class="mt-6 max-w-prose leading-relaxed text-stone [&_p+p]:mt-3">{{ content }}</div>
+
+            {{ if ! variants }}
+                <p class="mt-8 rounded-2xl bg-sand px-5 py-4 text-sm text-stone">This product isn't available right now.</p>
+            {{ /if }}
+
+            <form class="mt-8 space-y-6 {{ ! variants ?= 'hidden' }}" @submit.prevent="handleSubmit($event.target)" x-effect="added && $store.drawer.show()">
+                <input type="hidden" name="ss-product-variant" value="">
+
+                {{# Option pills (Metal, Length, Size…); values with nothing in stock are struck through #}}
+                <template x-for="(name, key) in options" :key="key">
+                    <fieldset x-show="variants.length > 1">
+                        <legend class="mb-3 text-sm">
+                            <span class="font-medium" x-text="name"></span>
+                            <span class="text-stone" x-text="selected[key] ? '· ' + selected[key] : ''"></span>
+                        </legend>
+                        <div class="flex flex-wrap gap-2" role="radiogroup" :aria-label="name">
+                            <template x-for="value in getOptions(key)" :key="value">
+                                <button
+                                    type="button"
+                                    role="radio"
+                                    class="option-pill"
+                                    :aria-checked="selected[key] === value"
+                                    :data-unavailable="! variants.some(variant => variant[key] === value && ! outOfStock(variant) && Object.entries(selected).every(([other, picked]) => other === key || variant[other] === picked))"
+                                    @click="optionChange(key, value)"
+                                    x-text="value"
+                                ></button>
+                            </template>
+                        </div>
+                    </fieldset>
+                </template>
+
+                {{# Stock for the selected variant (in the shopper's market) #}}
+                <div class="text-sm" x-data="{
+                    get quantity() {
+                        return getMarketData(selectedVariant)?.inventory_quantity ?? selectedVariant?.inventory_quantity;
+                    },
+                }">
+                    <template x-if="variantExistsAndIsInStock()">
+                        <p class="flex items-center gap-2" :class="quantity <= 3 ? 'text-rose' : 'text-sage'">
+                            <span class="size-2 rounded-full bg-current"></span>
+                            <span x-text="quantity <= 3 ? `Only ${quantity} left` : 'In stock, ready to ship'"></span>
+                        </p>
+                    </template>
+                    <template x-if="! variantExistsAndIsInStock()">
+                        <p class="flex items-center gap-2 text-stone"><span class="size-2 rounded-full bg-current"></span> Sold out in this option</p>
+                    </template>
+                </div>
+
+                <div class="flex gap-3">
+                    <label class="sr-only" for="qty">Quantity</label>
+                    <input id="qty" x-ref="qty" type="number" min="1" value="1" class="w-20 rounded-full border border-ink/15 bg-white px-4 text-center">
+                    <button type="submit" class="btn btn-primary grow" :disabled="! variantExistsAndIsInStock()">
+                        <span x-show="! added">Add to bag</span>
+                        <span x-show="added" x-cloak>Added ✓</span>
+                    </button>
+                </div>
+            </form>
+
+            {{# Details: Shopify metafields and taxonomies, plus a Statamic-only field #}}
+            <div class="mt-10 divide-y divide-ink/10 border-y border-ink/10">
+                {{ if editors_note }}
+                    {{ partial:partials/accordion title="Why we love it" open="true" }}{{ editors_note }}{{ /partial:partials/accordion }}
+                {{ /if }}
+                {{ if materials }}
+                    {{ partial:partials/accordion title="Materials" }}{{ materials }}{{ /partial:partials/accordion }}
+                {{ /if }}
+                {{ if care }}
+                    {{ partial:partials/accordion title="Care" }}{{ care | nl2br }}{{ /partial:partials/accordion }}
+                {{ /if }}
+                {{ partial:partials/accordion title="Delivery & returns" }}Free UK delivery over £50. Returns within 30 days. (This is a demo: orders are placed in a Shopify test store and never shipped.){{ /partial:partials/accordion }}
+            </div>
+
+            {{ if tags }}
+                <div class="mt-6 flex flex-wrap gap-2">
+                    {{ tags }}<a href="/tags/{{ slug }}" class="chip">{{ title | title }}</a>{{ /tags }}
                 </div>
             {{ /if }}
 
-            {{ if vendor }}
-            <div class="flex py-3 -mt-px text-sm border-t border-b">
-                    <span class="mr-3 font-medium">Vendor</span>
-                    <span>
-                    {{ vendor }}
-                        <a href="/vendor/{{ slug }}" class="hover:text-indigo-700">{{ title | ucfirst }}</a>
-                    {{ /vendor }}
-                    </span>
-                </div>
-            {{ /if }}
-
-            {{ if {shopify:in_stock :product="slug"} }}
-                <form @submit.prevent='handleSubmit($event.target); document.getElementById("ss-banner-message").innerHTML = `<div class="text-center"><span class="mr-4">Product added to the basket.</span><a href="/cart" class="inline-flex items-center"><span>Go to cart</span> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="ml-2 w-4"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></a></div>`; document.getElementById("ss-banner-message").classList.remove("hidden");'>
-                    <input type="hidden" name="product_id" id="ss-product-id" value="{{ product_id }}" />
-
-                    {{ shopify:variants:generate show_price="true" show_out_of_stock="true" class="hidden" }}
-
-                    <div class="flex mb-3" x-show="variants.length > 1">
-                        <template x-for="(option, index) in options">
-                            <div class="block my-2">
-                                <label class="block my-2" x-text="option"></label>
-
-                                <select @change="optionChange(index, $event.target.value)">
-                                    <option disabled x-text="'Choose ' + option"></option>
-                                    <template x-for="value in getOptions(index)">
-                                        <option :value="value" x-text="value" :selected="(selected[index] ?? false) == value">
-                                    </template>
-                                </select>
-
-                            </div>
-                        </template>
-                    </div>
-
-                    <div class="flex mb-3">
-                        <input type="number" min="1" value="1" x-ref="qty" class="w-20 p-2 border" />
-                    </div>
-
-                    <button type="submit" :disabled="! (allOptionsSelected() && variantExistsAndIsInStock())" class="px-4 py-2 text-base font-medium text-white bg-indigo-600 border border-transparent rounded-md shadow-sm hover:bg-indigo-700" x-text="added ? 'Added!' : 'Add to cart'">Add to Cart</button>
-                </form>
-            {{ else }}
-                <p class="mt-5 mb-2 font-medium">Out of Stock</p>
-
-                <button type="submit" class="px-4 py-2 text-base font-medium text-white bg-gray-600 border border-transparent rounded-md shadow-sm pointer-events-none" disabled>Add to Cart</button>
-            {{ /if }}
+            {{ partial:partials/under_the_hood title="variants, stock and metafields" class="mt-8" }}
+                <p>The option buttons use the addon's <code>shopifyProduct</code> Alpine component with this product's variants from <code>@{{ shopify:variants }}</code>. Stock and prices come from each variant (or its market, when you switch country), and <strong>Add to bag</strong> creates a Shopify cart through the Storefront API.</p>
+                <p><em>Materials</em> and <em>Care</em> are Shopify metafields, imported onto the entry. <em>Why we love it</em> is a Statamic field: the import never overwrites it.</p>
+                {{ slot:code }}
+@{{ variants = {shopify:variants} }}
+<div x-data='shopifyProduct(@{{ options | to_json }}, @{{ variants | to_json }})'>
+    <template x-for="(name, key) in options">…option buttons…</template>
+    <p x-text="$store.market.format(getVariantPrice(selectedVariant))"></p>
+    <button :disabled="! variantExistsAndIsInStock()">Add to bag</button>
+</div>
+                {{ /slot:code }}
+            {{ /partial:partials/under_the_hood }}
         </div>
     </div>
 </div>
 
+{{# More from the same collection #}}
+{{ if collections }}
+{{ collections limit="1" as="related_collections" }}
+    {{ related_collections }}
+        <section class="container-page py-12">
+            <h2 class="font-serif text-3xl tracking-tight">More from {{ title }}</h2>
+            <div class="mt-8 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+                {{ collection:products :taxonomy:collections="slug" :id:not="page:id" limit="4" }}
+                    {{ partial:partials/product_card }}
+                {{ /collection:products }}
+            </div>
+        </section>
+    {{ /related_collections }}
+{{ /collections }}
+{{ /if }}

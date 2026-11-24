@@ -1,0 +1,59 @@
+title: Home
+hide: true
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        display: Hero
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+          -
+            handle: hero_eyebrow
+            field: { type: text, display: Eyebrow }
+          -
+            handle: hero_title
+            field: { type: text, display: Headline }
+          -
+            handle: hero_text
+            field: { type: textarea, display: Text }
+          -
+            handle: hero_image
+            field: { type: assets, display: Image, container: assets, max_files: 1 }
+      -
+        display: Shop
+        instructions: 'Collections are imported from Shopify as taxonomy terms, so you can pick them here.'
+        fields:
+          -
+            handle: featured_collections
+            field: { type: terms, display: 'Shop by category', taxonomies: [collections], max_items: 3, mode: select }
+          -
+            handle: spotlight_collection
+            field: { type: terms, display: 'Spotlight collection', taxonomies: [collections], max_items: 1, mode: select }
+      -
+        display: Story
+        fields:
+          -
+            handle: story_title
+            field: { type: text, display: Title }
+          -
+            handle: story_text
+            field: { type: bard, display: Text, buttons: [bold, italic, link], save_html: false }
+          -
+            handle: story_image
+            field: { type: assets, display: Image, container: assets, max_files: 1 }
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          -
+            handle: slug
+            field: { type: slug }
+          -
+            handle: meta_description
+            field: { type: textarea, display: 'Meta description' }

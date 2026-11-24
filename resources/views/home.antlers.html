@@ -1,12 +1,148 @@
-<div class="container max-w-4xl mx-auto">
-
-    <h1 class="mb-10 text-5xl font-bold leading-tight tracking-tighter"> Shopify + Statamic Demo</h1>
-
-    <div class="prose">
-        <p>Hey, thanks for visiting the demo. All of the products on this site are served from the CMS and imported from Shopify.</p>
-        <p>Interacting with Shopify on the front end is controlled with the Storefront API.</p>
-        <p>Please have a poke around.</p>
-        <p>For more info you can read the <a href="https://statamic-shopify-docs.vercel.app">documentation</a>.</p>
+{{# Hero: text and image are edited in Statamic #}}
+<section class="container-page grid items-center gap-10 pt-10 pb-16 lg:grid-cols-[1fr_1.1fr] lg:gap-16 lg:pt-16 lg:pb-24">
+    <div class="max-w-xl">
+        <p class="eyebrow">{{ hero_eyebrow }}</p>
+        <h1 class="mt-5 font-serif text-5xl leading-[1.05] tracking-tight text-balance sm:text-6xl lg:text-7xl">{{ hero_title }}</h1>
+        <div class="mt-6 max-w-md text-lg leading-relaxed text-pretty text-stone">{{ hero_text }}</div>
+        <div class="mt-9 flex flex-wrap gap-3">
+            <a href="/shop" class="btn btn-primary">Shop the collection</a>
+            <a href="/how-it-works" class="btn btn-secondary">How this demo works</a>
+        </div>
     </div>
 
-</div>
+    <div class="relative">
+        {{ hero_image }}
+            <img
+                src="{{ glide:url width="1200" height="1300" fit="crop_focal" }}"
+                alt="{{ alt }}"
+                class="aspect-[12/13] w-full rounded-[2rem] object-cover"
+            >
+        {{ /hero_image }}
+        <div class="absolute -bottom-5 left-6 hidden rounded-2xl bg-white/95 px-5 py-4 shadow-xl shadow-ink/5 sm:block">
+            <p class="eyebrow text-[0.62rem]">Synced from Shopify</p>
+            <p class="mt-1 text-sm">{{ collection:count from="products" }} products · {{ taxonomy:count from="collections" }} collections</p>
+        </div>
+    </div>
+</section>
+
+{{# Shop by category: Shopify collections, imported as taxonomy terms #}}
+{{ if featured_collections }}
+<section class="container-page py-12">
+    <div class="flex items-end justify-between gap-6">
+        <div>
+            <p class="eyebrow">Shop by category</p>
+            <h2 class="mt-3 font-serif text-4xl tracking-tight">Find your piece</h2>
+        </div>
+        <a href="/shop" class="hidden text-sm link-underline sm:block">View everything</a>
+    </div>
+
+    <div class="mt-10 grid gap-5 sm:grid-cols-3">
+        {{ featured_collections }}
+            <a href="{{ url }}" class="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-sand">
+                {{ if featured_image }}
+                    {{ featured_image }}
+                        <img src="{{ glide:url width="700" height="930" fit="crop_focal" }}" alt="" loading="lazy" class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.04]">
+                    {{ /featured_image }}
+                {{ else }}
+                    {{ collection:products :taxonomy:collections="slug" limit="1" }}
+                        {{ featured_image }}
+                            <img src="{{ glide:url width="700" height="930" fit="crop_focal" }}" alt="" loading="lazy" class="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.04]">
+                        {{ /featured_image }}
+                    {{ /collection:products }}
+                {{ /if }}
+                <div class="absolute inset-0 bg-gradient-to-t from-ink/60 via-ink/0 to-ink/0"></div>
+                <div class="absolute inset-x-0 bottom-0 flex items-end justify-between p-6 text-ivory">
+                    <h3 class="font-serif text-3xl">{{ title }}</h3>
+                    <span class="text-sm opacity-80 transition group-hover:translate-x-1">Shop →</span>
+                </div>
+            </a>
+        {{ /featured_collections }}
+    </div>
+</section>
+{{ /if }}
+
+{{# New arrivals: the most recently published products #}}
+<section class="container-page py-12">
+    <div class="flex items-end justify-between gap-6">
+        <div>
+            <p class="eyebrow">Just landed</p>
+            <h2 class="mt-3 font-serif text-4xl tracking-tight">New arrivals</h2>
+        </div>
+        <a href="/shop" class="text-sm link-underline">Shop all</a>
+    </div>
+
+    <div class="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+        {{ collection:products sort="published_at:desc" query_scope="product_has_stock" limit="4" }}
+            {{ partial:partials/product_card }}
+        {{ /collection:products }}
+    </div>
+
+    {{ partial:partials/under_the_hood title="these products come from Shopify, but they're Statamic entries" class="mt-10" }}
+        <p>The addon imports every Shopify product as an entry in a <code>products</code> collection, so you query them like any other content. This grid hides anything sold out with the addon's <code>product_has_stock</code> query scope, which reads the stock summary saved on each product, so it doesn't need to load the variants.</p>
+        {{ slot:code }}
+@{{ collection:products sort="published_at:desc" query_scope="product_has_stock" limit="4" }}
+    @{{ title }} @{{ shopify:product_price show_from="true" }}
+@{{ /collection:products }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+</section>
+
+{{# How the pieces fit together #}}
+<section class="my-16 bg-ink py-20 text-ivory">
+    <div class="container-page">
+        <p class="eyebrow text-gold">Statamic + Shopify</p>
+        <h2 class="mt-4 max-w-2xl font-serif text-4xl tracking-tight text-balance sm:text-5xl">Shopify runs the shop. Statamic runs the site.</h2>
+
+        <div class="mt-14 grid gap-10 md:grid-cols-3">
+            <div>
+                <p class="font-serif text-2xl">Shopify</p>
+                <p class="mt-3 leading-relaxed text-ivory/70">Products, variants, stock, prices for each market, and a secure checkout. Merchants keep working in the Shopify admin.</p>
+            </div>
+            <div>
+                <p class="font-serif text-2xl">Statamic</p>
+                <p class="mt-3 leading-relaxed text-ivory/70">Pages, stories and layout, plus your own fields on products. Everything is a flat file you can version, and editors get the Statamic control panel.</p>
+            </div>
+            <div>
+                <p class="font-serif text-2xl">The addon</p>
+                <p class="mt-3 leading-relaxed text-ivory/70">Imports the catalogue, then keeps it in step with webhooks: a price change, a sale or a refund in Shopify updates this site within seconds.</p>
+            </div>
+        </div>
+
+        <a href="/how-it-works" class="btn mt-12 bg-ivory text-ink hover:bg-white">See how it works</a>
+    </div>
+</section>
+
+{{# A Shopify collection, chosen in Statamic #}}
+{{ spotlight_collection }}
+    <section class="container-page py-12">
+        <div class="flex items-end justify-between gap-6">
+            <div>
+                <p class="eyebrow">Collection</p>
+                <h2 class="mt-3 font-serif text-4xl tracking-tight">{{ title }}</h2>
+            </div>
+            <a href="{{ url }}" class="text-sm link-underline">View the collection</a>
+        </div>
+
+        <div class="mt-10 grid grid-cols-2 gap-x-5 gap-y-10 lg:grid-cols-4">
+            {{ collection:products :taxonomy:collections="slug" limit="4" }}
+                {{ partial:partials/product_card }}
+            {{ /collection:products }}
+        </div>
+    </section>
+{{ /spotlight_collection }}
+
+{{# Editorial content: a Statamic-only story #}}
+{{ if story_title }}
+    <section class="container-page py-16">
+        <div class="grid items-center gap-10 overflow-hidden rounded-[2rem] bg-sand md:grid-cols-2">
+            {{ story_image }}
+                <img src="{{ glide:url width="1000" height="900" fit="crop_focal" }}" alt="{{ alt }}" loading="lazy" class="aspect-[10/9] size-full object-cover">
+            {{ /story_image }}
+            <div class="p-8 md:p-12">
+                <p class="eyebrow">From the journal</p>
+                <h2 class="mt-4 font-serif text-4xl tracking-tight text-balance">{{ story_title }}</h2>
+                <div class="prose prose-stone mt-5 leading-relaxed">{{ story_text }}</div>
+            </div>
+        </div>
+    </section>
+{{ /if }}

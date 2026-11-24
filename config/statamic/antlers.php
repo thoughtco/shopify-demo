@@ -4,15 +4,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Version
+    | Debugbar
     |--------------------------------------------------------------------------
     |
-    | The desired Antlers language version to utilize. Supported values are
-    | "runtime" for the modern parser, or "regex" for the legacy parser.
+    | Here you may specify whether the Antlers profiler should be added
+    | to the Laravel Debugbar. This is incredibly useful for finding
+    | performance impacts within any of your Antlers templates.
     |
     */
 
-    'version' => 'runtime',
+    'debugbar' => env('STATAMIC_ANTLERS_DEBUGBAR', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -55,5 +56,26 @@ return [
     'guardedModifiers' => [
 
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | User content allowlists
+    |--------------------------------------------------------------------------
+    |
+    | These control which tags and modifiers will be permitted in user-supplied
+    | Antlers (e.g. fields with `antlers: true`). Include the literal string
+    | `@default` in the array to merge Statamic's defaults with your own.
+    |
+    */
+
+    // 'allowedContentTags' => [
+    //     '@default',
+    //     'foo:*',
+    // ],
+
+    // 'allowedContentModifiers' => [
+    //     '@default',
+    //     'foo'
+    // ],
 
 ];

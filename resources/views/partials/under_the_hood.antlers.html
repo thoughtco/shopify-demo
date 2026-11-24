@@ -1,0 +1,18 @@
+{{#
+    "Under the hood" notes explaining how a part of the page is built with the addon.
+    Usage: {{ partial:partials/under_the_hood title="..." }} text {{ slot:code }}...{{ /slot:code }} {{ /partial:partials/under_the_hood }}
+#}}
+<details class="group min-w-0 rounded-2xl border border-dashed border-gold/50 bg-white/50 text-sm open:bg-white/80 {{ class }}">
+    <summary class="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-gold-dark select-none">
+        <svg class="size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M6.28 5.22a.75.75 0 0 1 0 1.06L2.56 10l3.72 3.72a.75.75 0 0 1-1.06 1.06L.97 10.53a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Zm7.44 0a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L17.44 10l-3.72-3.72a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>
+        <span class="font-medium">Under the hood:</span>
+        <span class="text-ink">{{ title }}</span>
+        <svg class="ml-auto size-4 transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+    </summary>
+    <div class="space-y-3 px-4 pb-4 leading-relaxed text-stone [&_a]:text-ink [&_a]:underline [&_a]:underline-offset-2 [&_code]:rounded [&_code]:bg-sand [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.8em] [&_code]:text-ink">
+        {{ slot }}
+        {{ if slot:code }}
+            <pre class="code-block">{{ slot:code | trim | entities }}</pre>
+        {{ /if }}
+    </div>
+</details>

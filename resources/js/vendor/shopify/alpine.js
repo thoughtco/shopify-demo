@@ -1,24 +1,40 @@
-import { addLines, getOrCreateCart, removeLine, setCartAttributes, setCartNote, updateLineQuantity } from './cart';
-import Alpine from 'alpinejs';
+import { addLines, getOrCreateCart, removeLine, setCartAttributes, setCartNote, updateBuyerCountry, updateLineQuantity } from './cart.js';
+import { cartStorageKey, formatMoney } from './money.js';
 
-const createStore = () => {
+const createStore = (Alpine) => {
     Alpine.store('statamic.shopify.cart', {
         cartId: null,
         checkoutUrl: '',
+        currencyCode: null,
         lineItems: [],
+        market: window.shopifyConfig?.market,
         note: '',
         subtotal: null,
+        subtotalAmount: null,
 
         async init() {
-            this.cartId = localStorage.getItem('statamic.shopify.cart.id');
+            this.cartId = localStorage.getItem(cartStorageKey());
 
             if (this.cartId) {
                 this.updateFromResponse(await getOrCreateCart(this.cartId));
             }
+
+            window.addEventListener('shopify.updateMarket', (event) => {
+                this.market = event.detail.market;
+
+                // markets mode: move the cart to the new market so checkout uses its prices and currency
+                if (window.shopifyConfig?.country && event.detail.market) {
+                    window.shopifyConfig.country = event.detail.market.toUpperCase();
+
+                    if (this.cartId) {
+                        updateBuyerCountry(this.cartId, window.shopifyConfig.country).then(response => this.updateFromResponse(response));
+                    }
+                }
+            });
         },
 
-        formatCurrency(amount) {
-            return '&pound;' + parseFloat(amount).toFixed(2);
+        formatCurrency(amount, currencyCode = null) {
+            return formatMoney(amount, currencyCode ?? this.currencyCode);
         },
 
         getItems() {
@@ -42,41 +58,55 @@ const createStore = () => {
         },
 
         updateFromResponse(checkout) {
+            // failed requests resolve to nothing (see the shopify.cart.error event)
+            if (! checkout) {
+                return;
+            }
+
+            const currencyCode = checkout.cost.totalAmount.currencyCode;
             let mappedLineItems = [];
             for (let line of checkout.lines.edges) {
                 line = line.node;
 
                 let attrs = {};
-                line.attributes.forEach((attr) => attrs[key] = attr.value);
+                line.attributes.forEach((attr) => attrs[attr.key] = attr.value);
 
                 let qty = line.quantity;
+                let amount = parseFloat(line.cost.amountPerQuantity.amount);
 
                 mappedLineItems.push({
                     id: line.id,
                     title: line.merchandise.product.title,
                     variant: {
                         title: line.merchandise.title,
+                        id: line.merchandise.id,
                     },
-                    price:this.formatCurrency(line.cost.amountPerQuantity.amount),
+                    price: this.formatCurrency(amount, currencyCode),
                     qty: qty,
-                    subtotal: this.formatCurrency(line.cost.amountPerQuantity.amount * qty),
+                    subtotal: this.formatCurrency(amount * qty, currencyCode),
+                    // unformatted values, for formatting prices yourself
+                    amount: amount,
+                    subtotalAmount: amount * qty,
+                    currencyCode: currencyCode,
                     image: line.merchandise?.image?.url,
                     attributes: attrs,
                 });
             }
 
             this.cartId = checkout.id;
+            this.currencyCode = currencyCode;
             this.lineItems = mappedLineItems;
             this.note = checkout.note;
-            this.subtotal = this.formatCurrency(checkout.cost.totalAmount.amount);
+            this.subtotal = this.formatCurrency(checkout.cost.totalAmount.amount, currencyCode);
+            this.subtotalAmount = parseFloat(checkout.cost.totalAmount.amount);
             this.checkoutUrl = checkout.checkoutUrl;
 
-            localStorage.setItem('statamic.shopify.cart.id', this.cartId);
+            localStorage.setItem(cartStorageKey(), this.cartId);
         }
     });
 }
 
-const createData = () => {
+const createData = (Alpine) => {
     Alpine.data('shopifyProduct', (options, variants) => ({
         added: false,
         customAttributes: {},
@@ -85,6 +115,11 @@ const createData = () => {
         selectedVariant: false,
         variants: variants,
         variantEl: null,
+
+        // markets mode: the active market, kept by the cart store (it follows shopify.updateMarket)
+        get market() {
+            return Alpine.store('statamic.shopify.cart')?.market ?? window.shopifyConfig?.market ?? null;
+        },
 
         init() {
             this.variantEl = this.$el.querySelector('[name="ss-product-variant"]');
@@ -95,10 +130,14 @@ const createData = () => {
 
             if (! options) {
                 options = {};
+                this.options = options;
             }
 
             this.selectedVariant = variants[0];
-            this.variantEl.value = this.selectedVariant.slug;
+            
+            if (this.variantEl) {
+                this.variantEl.value = this.selectedVariant.slug;
+            }
 
             for (const [key, value] of Object.entries(options)) {
                 this.selected[key] = this.selectedVariant[key];
@@ -142,11 +181,20 @@ const createData = () => {
 
             let cart = await getOrCreateCart(Alpine.store('statamic.shopify.cart').cartId);
 
+            // the error has been reported with a shopify.cart.error event
+            if (! cart) {
+                return;
+            }
+
             let response = await addLines(cart.id, [{
                 attributes: attributes,
                 merchandiseId: "gid://shopify/ProductVariant/" + variantId,
                 quantity: qty,
             }]);
+
+            if (! response) {
+                return;
+            }
 
             Alpine.store('statamic.shopify.cart').updateFromResponse(response);
 
@@ -156,21 +204,21 @@ const createData = () => {
 
         optionChange(index, value) {
             this.selected[index] = value;
+        },
 
-            let filteredVariants = variants;
-            for (const [key, value] of Object.entries(options)) {
-                filteredVariants = filteredVariants.filter((variant) => {
-                    return variant[key] == this.selected[key] ?? false;
-                });
-            }
+        getMarketData(variant) {
+            if (! this.market || !variant.market_data) return null;
+            return variant.market_data[this.market] ?? null;
+        },
 
-            if (filteredVariants.length == 1) {
-                this.variantEl.value = filteredVariants[0].slug;
-            }
+        getVariantPrice(variant) {
+            return this.getMarketData(variant)?.price ?? variant.price;
         },
 
         outOfStock(variant) {
-            return variant.inventory_policy == 'deny' && variant.inventory_management == 'shopify' && variant.inventory_quantity <= 0;
+            const marketData = this.getMarketData(variant);
+            const qty = marketData ? marketData.inventory_quantity : variant.inventory_quantity;
+            return variant.inventory_policy && (variant.inventory_policy.toLowerCase() == 'deny') && (qty <= 0);
         },
 
         variantExistsAndIsInStock() {

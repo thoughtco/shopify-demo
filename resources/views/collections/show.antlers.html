@@ -1,0 +1,5 @@
+{{ partial:partials/term_page }}
+    {{ collection:products :taxonomy:collections="slug" sort="published_at:desc" paginate="12" as="products" }}
+        {{ partial:partials/product_grid }}
+    {{ /collection:products }}
+{{ /partial:partials/term_page }}

@@ -1,0 +1,9 @@
+<div x-data="{ open: {{ open ?? 'false' }} }">
+    <button type="button" class="flex w-full items-center justify-between py-4 text-left font-medium" @click="open = ! open" :aria-expanded="open">
+        {{ title }}
+        <svg class="size-4 transition" :class="open && 'rotate-45'" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" /></svg>
+    </button>
+    <div x-show="open" x-collapse {{ open != 'true' ?= 'x-cloak' }}>
+        <div class="pb-5 leading-relaxed text-stone">{{ slot }}</div>
+    </div>
+</div>

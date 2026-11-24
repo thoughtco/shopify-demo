@@ -1,0 +1,20 @@
+{{ if products }}
+    <div class="mt-10 grid grid-cols-2 gap-x-5 gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
+        {{ products }}
+            {{ partial:partials/product_card }}
+        {{ /products }}
+    </div>
+
+    {{ if paginate:total_pages > 1 }}
+        <nav class="mt-14 flex items-center justify-center gap-2 text-sm" aria-label="Pagination">
+            {{ paginate:prev_page ?= '<a href="{paginate:prev_page}" class="chip">← Previous</a>' }}
+            <span class="px-3 text-stone">Page {{ paginate:current_page }} of {{ paginate:total_pages }}</span>
+            {{ paginate:next_page ?= '<a href="{paginate:next_page}" class="chip">Next →</a>' }}
+        </nav>
+    {{ /if }}
+{{ else }}
+    <div class="mt-16 rounded-2xl bg-sand px-6 py-16 text-center">
+        <p class="font-serif text-2xl">Nothing matches those filters</p>
+        <a href="{{ current_url }}" class="mt-4 inline-block text-sm link-underline">Clear filters</a>
+    </div>
+{{ /if }}

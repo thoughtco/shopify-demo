@@ -1,0 +1,82 @@
+{{# Slide-over bag, driven by the addon's statamic.shopify.cart Alpine store #}}
+<div
+    x-cloak
+    x-show="$store.drawer.open"
+    class="fixed inset-0 z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Your bag"
+    @keydown.escape.window="$store.drawer.hide()"
+>
+    <div
+        x-show="$store.drawer.open"
+        x-transition.opacity.duration.300ms
+        class="absolute inset-0 bg-ink/30 backdrop-blur-[2px]"
+        @click="$store.drawer.hide()"
+    ></div>
+
+    <div
+        x-show="$store.drawer.open"
+        x-trap.noscroll="$store.drawer.open"
+        x-transition:enter="transition duration-500 ease-drawer"
+        x-transition:enter-start="translate-x-full"
+        x-transition:leave="transition duration-300 ease-drawer"
+        x-transition:leave-end="translate-x-full"
+        class="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-ivory shadow-2xl"
+        x-data="{ cart: $store['statamic.shopify.cart'] }"
+    >
+        <div class="flex items-center justify-between border-b border-ink/8 px-6 py-5">
+            <h2 class="font-serif text-2xl">Your bag</h2>
+            <button type="button" class="rounded-full p-2 hover:bg-sand" @click="$store.drawer.hide()" aria-label="Close">
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+
+        <div class="grow overflow-y-auto px-6">
+            <template x-if="! cart.lineItems.length">
+                <div class="flex h-full flex-col items-center justify-center gap-4 text-center">
+                    <p class="font-serif text-xl">Your bag is empty</p>
+                    <p class="max-w-xs text-sm text-stone">Add something from the shop and it's kept in a Shopify cart via the Storefront API.</p>
+                    <a href="/shop" class="btn btn-secondary mt-2" @click="$store.drawer.hide()">Browse the shop</a>
+                </div>
+            </template>
+
+            <ul class="divide-y divide-ink/8">
+                <template x-for="item in cart.lineItems" :key="item.id">
+                    <li class="flex gap-4 py-5">
+                        <div class="size-24 shrink-0 overflow-hidden rounded-xl bg-sand">
+                            <img x-show="item.image" :src="item.image" :alt="item.title" class="size-full object-cover">
+                        </div>
+                        <div class="flex min-w-0 grow flex-col">
+                            <div class="flex justify-between gap-3">
+                                <div>
+                                    <p class="font-medium" x-text="item.title"></p>
+                                    <p class="text-sm text-stone" x-show="item.variant.title !== 'Default Title'" x-text="item.variant.title"></p>
+                                </div>
+                                <p class="text-sm" x-text="item.subtotal"></p>
+                            </div>
+                            <div class="mt-auto flex items-center justify-between pt-3">
+                                <div class="inline-flex items-center rounded-full border border-ink/15">
+                                    <button type="button" class="px-3 py-1 text-stone hover:text-ink" @click="item.qty > 1 ? cart.updateQuantity(item.id, item.qty - 1) : cart.removeLine(item.id)" aria-label="Decrease quantity">−</button>
+                                    <span class="w-6 text-center text-sm" x-text="item.qty"></span>
+                                    <button type="button" class="px-3 py-1 text-stone hover:text-ink" @click="cart.updateQuantity(item.id, item.qty + 1)" aria-label="Increase quantity">+</button>
+                                </div>
+                                <button type="button" class="text-xs text-stone link-underline" @click="cart.removeLine(item.id)">Remove</button>
+                            </div>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </div>
+
+        <div x-show="cart.lineItems.length" class="border-t border-ink/8 px-6 py-6">
+            <div class="flex items-baseline justify-between">
+                <span class="text-sm text-stone">Subtotal</span>
+                <span class="font-serif text-2xl" x-text="cart.subtotal"></span>
+            </div>
+            <p class="mt-1 text-xs text-stone">Shipping and taxes are worked out by Shopify at checkout.</p>
+            <a :href="cart.checkoutUrl" class="btn btn-primary mt-5 w-full">Checkout with Shopify</a>
+            <a href="/cart" class="mt-3 block text-center text-sm text-stone link-underline">View bag</a>
+        </div>
+    </div>
+</div>

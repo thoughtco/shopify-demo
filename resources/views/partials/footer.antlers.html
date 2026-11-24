@@ -1,0 +1,45 @@
+<footer class="mt-24 border-t border-ink/8 bg-sand">
+    <div class="container-page grid gap-12 py-16 md:grid-cols-[2fr_1fr_1fr_1fr]">
+        <div class="max-w-sm">
+            <p class="font-serif text-2xl">{{ site:name }}</p>
+            <p class="mt-3 text-sm leading-relaxed text-stone">
+                A demo jewellery store. Products, stock and prices live in Shopify; pages, stories and layout live in Statamic. Webhooks keep the two in step.
+            </p>
+        </div>
+
+        <div>
+            <p class="eyebrow">Shop</p>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="/shop" class="hover:text-gold-dark">All jewellery</a></li>
+                {{ taxonomy:collections sort="title" slug:not="frontpage" }}
+                    <li><a href="{{ url }}" class="hover:text-gold-dark">{{ title }}</a></li>
+                {{ /taxonomy:collections }}
+            </ul>
+        </div>
+
+        <div>
+            <p class="eyebrow">The demo</p>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="/how-it-works" class="hover:text-gold-dark">How it works</a></li>
+                <li><a href="https://www.docs.tc/shopify" class="hover:text-gold-dark">Documentation</a></li>
+                <li><a href="https://github.com/thoughtco/shopify-demo" class="hover:text-gold-dark">Source code</a></li>
+            </ul>
+        </div>
+
+        <div>
+            <p class="eyebrow">The addon</p>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li><a href="https://statamic.com/addons/thoughtco/shopify" class="hover:text-gold-dark">Statamic Marketplace</a></li>
+                <li><a href="https://github.com/thoughtco/shopify" class="hover:text-gold-dark">GitHub</a></li>
+                <li><a href="https://thoughtcollective.com" class="hover:text-gold-dark">Thought Collective</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="border-t border-ink/8">
+        <div class="container-page flex flex-wrap justify-between gap-2 py-6 text-xs text-stone">
+            <p>A demo by Thought Collective. Not a real shop: checkout runs in a Shopify test store.</p>
+            <p>Built with Statamic, Shopify, Tailwind and Alpine.js</p>
+        </div>
+    </div>
+</footer>

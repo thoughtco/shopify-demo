@@ -1,0 +1,32 @@
+{{#
+    All products, filtered with query string parameters:
+    ?type=necklace, ?in_stock=1 and ?sort=price_min:asc
+#}}
+{{ sort = get:sort ?? 'published_at:desc' }}
+
+<section class="container-page pt-12 pb-16">
+    <p class="eyebrow">The shop</p>
+    <h1 class="mt-3 font-serif text-5xl tracking-tight">{{ title }}</h1>
+    {{ if content }}<div class="mt-4 max-w-xl text-lg text-stone">{{ content }}</div>{{ /if }}
+
+    {{ partial:partials/shop_filters }}
+
+    {{ if get:in_stock }}
+        {{ collection:products :taxonomy:type="get:type" query_scope="product_has_stock" :sort="sort" paginate="12" as="products" }}
+            {{ partial:partials/product_grid }}
+        {{ /collection:products }}
+    {{ else }}
+        {{ collection:products :taxonomy:type="get:type" :sort="sort" paginate="12" as="products" }}
+            {{ partial:partials/product_grid }}
+        {{ /collection:products }}
+    {{ /if }}
+
+    {{ partial:partials/under_the_hood title="filtering and sorting" class="mt-12" }}
+        <p>Each product stores a summary of its variants when it's imported (<code>price_min</code>, <code>price_max</code>, <code>in_stock</code> and <code>on_sale</code>), and webhooks keep it up to date. That's what makes sorting by price, sale badges and the in-stock filter cheap: no variant queries.</p>
+        {{ slot:code }}
+@{{ collection:products query_scope="product_has_stock" sort="price_min:asc" paginate="12" }}
+    @{{ if on_sale }}Sale@{{ /if }} @{{ title }} @{{ shopify:product_price show_from="true" }}
+@{{ /collection:products }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+</section>

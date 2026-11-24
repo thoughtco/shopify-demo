@@ -1,0 +1,49 @@
+<header class="sticky top-0 z-30 border-b border-ink/8 bg-ivory/90 backdrop-blur" x-data="{ menu: false }">
+    <div class="container-page flex h-16 items-center justify-between gap-6 sm:h-20">
+        <div class="flex items-center gap-10">
+            <a href="/" class="font-serif text-2xl tracking-tight sm:text-[1.7rem]">{{ site:name }}</a>
+
+            <nav class="hidden items-center gap-7 text-sm lg:flex" aria-label="Main">
+                {{ nav:header }}
+                    <a href="{{ url }}" class="transition hover:text-gold-dark {{ is_current || is_parent ?= 'text-gold-dark' }}">{{ title }}</a>
+                {{ /nav:header }}
+            </nav>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-4">
+            {{ partial:partials/market_switcher }}
+
+            <button
+                type="button"
+                class="relative inline-flex items-center gap-2 rounded-full px-3 py-2 text-sm transition hover:bg-sand"
+                @click="$store.drawer.show()"
+                aria-label="Open your bag"
+            >
+                <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
+                </svg>
+                <span class="hidden sm:inline">Bag</span>
+                <span
+                    x-cloak
+                    x-show="$store['statamic.shopify.cart'].lineItems.length"
+                    x-text="$store['statamic.shopify.cart'].lineItems.reduce((total, item) => total + item.qty, 0)"
+                    class="grid size-5 place-items-center rounded-full bg-gold text-[0.65rem] font-semibold text-white"
+                ></span>
+            </button>
+
+            <button type="button" class="rounded-full p-2 hover:bg-sand lg:hidden" @click="menu = ! menu" :aria-expanded="menu" aria-label="Menu">
+                <svg class="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" d="M3.75 7.5h16.5M3.75 12h16.5M3.75 16.5h16.5" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <nav x-cloak x-show="menu" x-collapse class="border-t border-ink/8 lg:hidden" aria-label="Main">
+        <div class="container-page flex flex-col py-3 text-base">
+            {{ nav:header }}
+                <a href="{{ url }}" class="py-2">{{ title }}</a>
+            {{ /nav:header }}
+        </div>
+    </nav>
+</header>

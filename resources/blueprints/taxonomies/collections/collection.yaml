@@ -11,13 +11,6 @@ tabs:
               required: true
               validate:
                 - required
-              instructions_position: above
-              listable: hidden
-              visibility: read_only
-              replicator_preview: true
-              input_type: text
-              antlers: false
-              hide_display: false
           -
             handle: content
             field:
@@ -29,10 +22,7 @@ tabs:
                 - unorderedlist
                 - orderedlist
                 - removeformat
-                - quote
                 - anchor
-                - image
-                - table
               smart_typography: false
               save_html: true
               inline: false

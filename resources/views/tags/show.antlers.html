@@ -1,14 +1,5 @@
-<div class="container max-w-4xl mx-auto">
-
-    <h1 class="mb-10 text-5xl font-bold leading-tight tracking-tighter">{{ title }}</h1>
-
-    {{ entries as="products" limit="9" paginate="true" }}
-        <div class="grid grid-cols-3 gap-5">
-            {{ products }}
-                {{ partial:components/product }}
-            {{ /products }}
-        </div>
-
-        {{ partial:components/pagination }}
-    {{ /entries }}
-</div>
+{{ partial:partials/term_page }}
+    {{ collection:products :taxonomy:tags="slug" sort="published_at:desc" paginate="12" as="products" }}
+        {{ partial:partials/product_grid }}
+    {{ /collection:products }}
+{{ /partial:partials/term_page }}

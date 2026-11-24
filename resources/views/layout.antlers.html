@@ -2,25 +2,33 @@
 <html lang="{{ site:short_locale }}">
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="robots" content="noindex" />
-        <title>{{ title ?? site:name }}</title>
-        {{ vite src="resources/css/tailwind.css" }}
+        <title>{{ if segment_1 }}{{ title | sanitize }} · {{ /if }}{{ site:name }}</title>
+        <meta name="description" content="{{ meta_description ?? 'A demo store built with Statamic and the Shopify addon by Thought Collective.' }}">
 
-        {{ shopify:tokens }}
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link rel="stylesheet" href="https://fonts.bunny.net/css?family=fraunces:400,500,600,400i|inter:400,500,600|jetbrains-mono:400">
+
+        {{# Storefront API settings for the cart (url, token, currency, market) #}}
+        {{ if config:shopify.multi_store.enabled }}
+            {{ shopify:tokens :store="config:shopify.multi_store.default_market" }}
+        {{ else }}
+            {{ shopify:tokens }}
+        {{ /if }}
+        <script>window.demoMarkets = {{ config:shopify.multi_store.markets | to_json }};</script>
+
+        {{ vite src="resources/js/site.js|resources/css/site.css" }}
     </head>
-    <body class="font-sans leading-normal bg-gray-100 text-grey-800">
+    <body class="flex min-h-dvh flex-col" x-data>
+        {{ partial:partials/demo_bar }}
+        {{ partial:partials/header }}
 
-        {{ partial:layout/header }}
-        {{ partial:components/banner }}
-
-        <div class="px-4 pt-10">
+        <main class="grow">
             {{ template_content }}
+        </main>
 
-            {{ partial:components/cta }}
-        </div>
-
-        {{ vite src="resources/js/site.js" }}
+        {{ partial:partials/footer }}
+        {{ partial:partials/cart_drawer }}
+        {{ partial:partials/toast }}
     </body>
 </html>

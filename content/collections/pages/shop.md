@@ -1,9 +1,13 @@
 ---
-id: d2ee1f41-e8a5-4b37-88d8-1eb84bba473d
-blueprint: pages
-title: Shop
-author: 55571313-2ceb-4d92-bdf3-392e195f13a7
-template: products
-updated_by: 55571313-2ceb-4d92-bdf3-392e195f13a7
-updated_at: 1694800879
+id: 5d3c7a1e-0b6f-4d8e-9a51-2f4c8e7b6a10
+blueprint: page
+template: shop
+title: 'All jewellery'
+content:
+  -
+    type: paragraph
+    content:
+      -
+        type: text
+        text: 'Necklaces, earrings and bracelets, imported from Shopify and kept in sync with webhooks.'
 ---

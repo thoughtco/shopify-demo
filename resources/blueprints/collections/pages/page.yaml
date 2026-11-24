@@ -1,0 +1,36 @@
+title: Page
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+              required: true
+              validate:
+                - required
+          -
+            handle: content
+            field:
+              type: bard
+              buttons: [h2, h3, bold, italic, unorderedlist, orderedlist, link, quote, anchor]
+              save_html: false
+  sidebar:
+    display: Sidebar
+    sections:
+      -
+        fields:
+          -
+            handle: slug
+            field:
+              type: slug
+              localizable: true
+              validate: 'max:200'
+          -
+            handle: meta_description
+            field:
+              type: textarea
+              display: 'Meta description'

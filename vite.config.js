@@ -1,25 +1,21 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-// import vue2 from '@vitejs/plugin-vue2';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-    build: {
-        minify: false,
-    },
     plugins: [
         laravel({
-            input: [
-                'resources/css/tailwind.css',
-                'resources/css/site.css',
-                'resources/js/site.js',
-
-                // Control Panel assets.
-                // https://statamic.dev/extending/control-panel#adding-css-and-js-assets
-                // 'resources/css/cp.css',
-                // 'resources/js/cp.js',
-            ],
+            input: ['resources/css/site.css', 'resources/js/site.js'],
             refresh: true,
         }),
-        // vue2(),
+        tailwindcss(),
     ],
+    server: {
+        watch: {
+            ignored: [
+                '**/storage/framework/views/**',
+                '**/storage/statamic/**',
+            ],
+        },
+    },
 });
