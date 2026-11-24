@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Statamic\Facades\Entry;
 
 /*
@@ -46,3 +47,11 @@ Artisan::command('demo:cp-user', function () {
 
     $this->info("Control panel login: {$email}");
 })->purpose('Create or reset the public control panel login');
+
+/*
+ * Webhooks queue their imports. Without a dedicated queue worker, the scheduler
+ * (cron: * * * * * php artisan schedule:run) works through the queue every minute.
+ */
+Schedule::command('queue:work --stop-when-empty --max-time=55 --tries=3')
+    ->everyMinute()
+    ->withoutOverlapping();
