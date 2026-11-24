@@ -47,6 +47,7 @@
             </div>
             <p class="mt-1 text-xs text-stone">Shipping and taxes are worked out at checkout.</p>
             <a :href="cart.checkoutUrl" class="btn btn-primary mt-6 w-full">Checkout with Shopify</a>
+            {{ partial:partials/checkout_password }}
             <p class="mt-4 text-xs leading-relaxed text-stone">This is a Shopify development store, so checkout is in test mode: nothing is charged or shipped.</p>
         </aside>
     </div>

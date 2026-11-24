@@ -13,4 +13,10 @@ return [
 
     'cp_password' => env('DEMO_CP_PASSWORD', 'shopify-demo'),
 
+    /*
+     * Shopify development stores keep the storefront password on, and checkout runs
+     * on the storefront, so the bag shows this password next to the checkout button.
+     */
+    'checkout_password' => env('DEMO_CHECKOUT_PASSWORD'),
+
 ];

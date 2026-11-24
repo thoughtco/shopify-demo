@@ -55,6 +55,10 @@ php artisan demo:cp-user
 
 The login comes from `config/demo.php` (`DEMO_CP_EMAIL` and `DEMO_CP_PASSWORD`). Set `DEMO_READ_ONLY=false` when you need to make changes.
 
+## Checkout
+
+Shopify development stores keep the storefront password on, and checkout runs on the storefront. Set `DEMO_CHECKOUT_PASSWORD` to that password and the bag shows it next to the checkout button.
+
 ## The theme
 
 Tailwind CSS 4 and Alpine.js. Templates are in `resources/views`, and the addon's published scripts are in `resources/js/vendor/shopify`. Look for the "Under the hood" notes on the site, which show the Antlers behind each feature.
