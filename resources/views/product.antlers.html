@@ -1,9 +1,12 @@
 {{ variants = {shopify:variants} }}
 {{ images = gallery ?? featured_image }}
+{{# single-variant products have no options, so fall back to an empty list ("{}" would be read as interpolation) #}}
+{{ options_json = options | to_json }}
+{{ variants_json = variants | to_json }}
 
 <div
     class="container-page pt-6 pb-16"
-    x-data='shopifyProduct({{ options ? (options | to_json) : "{}" }}, {{ variants ? (variants | to_json) : "[]" }})'
+    x-data='shopifyProduct({{ options_json ?: "[]" }}, {{ variants_json ?: "[]" }})'
 >
     <nav class="flex items-center gap-2 text-sm text-stone" aria-label="Breadcrumb">
         <a href="/shop" class="hover:text-ink">Shop</a>
