@@ -368,17 +368,92 @@ const removeGiftCardCodes = async (cartId, ids) => {
     return (await run('cartGiftCardCodesRemove', query, { cartId, appliedGiftCardIds: ids }))?.cart;
 };
 
+/**
+ * Set who's buying (email, phone, countryCode), so Shopify's checkout is pre-filled.
+ * In markets mode the cart stays in the page's market country.
+ */
+const updateBuyerIdentity = async (cartId, buyerIdentity) => {
+    const query = operation('mutation', 'cartBuyerIdentityUpdate', ['$cartId: ID!', '$buyerIdentity: CartBuyerIdentityInput!'], `
+      cartBuyerIdentityUpdate(cartId: $cartId, buyerIdentity: $buyerIdentity) {
+        cart {
+          ${cartQuery}
+        }
+        ${userErrors}
+      }`);
+
+    const country = marketCountry();
+
+    return (await run('cartBuyerIdentityUpdate', query, {
+        cartId,
+        buyerIdentity: country ? { ...buyerIdentity, countryCode: country } : buyerIdentity,
+    }))?.cart;
+};
+
+/**
+ * Set the cart's delivery address (a CartDeliveryAddressInput: firstName, lastName,
+ * address1, city, provinceCode, countryCode, zip...), replacing any it already has,
+ * so Shopify's checkout is pre-filled with it.
+ */
+const setDeliveryAddress = async (cartId, deliveryAddress) => {
+    const query = operation('mutation', 'cartDeliveryAddressesReplace', ['$cartId: ID!', '$addresses: [CartSelectableAddressInput!]!'], `
+      cartDeliveryAddressesReplace(cartId: $cartId, addresses: $addresses) {
+        cart {
+          ${cartQuery}
+        }
+        ${userErrors}
+      }`);
+
+    return (await run('cartDeliveryAddressesReplace', query, {
+        cartId,
+        addresses: [{ address: { deliveryAddress }, selected: true }],
+    }))?.cart;
+};
+
+/**
+ * The logged in customer's buyer identity from the site (shopify.cart.buyer_identity),
+ * or null for guests, users not linked to a Shopify customer, or when it's off.
+ */
+const getBuyerIdentity = async () => {
+    const config = (typeof window !== 'undefined' ? window.shopifyConfig : null) ?? {};
+
+    if (! config.buyerIdentityUrl || typeof fetch !== 'function') {
+        return null;
+    }
+
+    const params = config.store ? `?store=${encodeURIComponent(config.store)}` : '';
+
+    try {
+        const response = await fetch(config.buyerIdentityUrl + params, {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+        });
+
+        if (! response.ok || response.status === 204) {
+            return null;
+        }
+
+        const identity = await response.json();
+
+        return identity && Object.keys(identity).length ? identity : null;
+    } catch (error) {
+        return null;
+    }
+};
+
 export {
     addGiftCardCodes,
     addLines,
     createFreshCart,
+    getBuyerIdentity,
     getExistingCart,
     getOrCreateCart,
     removeGiftCardCodes,
     removeLine,
     setCartAttributes,
     setCartNote,
+    setDeliveryAddress,
     updateBuyerCountry,
+    updateBuyerIdentity,
     updateDiscountCodes,
     updateLineQuantity,
 };

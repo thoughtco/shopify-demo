@@ -1,9 +1,10 @@
-import { addGiftCardCodes, addLines, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, updateBuyerCountry, updateDiscountCodes, updateLineQuantity } from './cart.js';
+import { addGiftCardCodes, addLines, getBuyerIdentity, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, setDeliveryAddress, updateBuyerCountry, updateBuyerIdentity, updateDiscountCodes, updateLineQuantity } from './cart.js';
 import { cartStorageKey, formatMoney } from './money.js';
 import { sellingPlanLabel, sellingPlanPrice, sellingPlansForVariant } from './selling-plans.js';
 
 const createStore = (Alpine) => {
     Alpine.store('statamic.shopify.cart', {
+        buyerIdentityCartId: null,
         cartId: null,
         checkoutUrl: '',
         currencyCode: null,
@@ -38,6 +39,46 @@ const createStore = (Alpine) => {
                     }
                 }
             });
+        },
+
+        // shopifyConfig.buyerIdentityUrl: pre-fill checkout for a logged in customer, once per cart
+        async applyBuyerIdentity() {
+            const key = cartStorageKey() + ':buyer';
+
+            if (! window.shopifyConfig?.buyerIdentityUrl || ! this.cartId || this.buyerIdentityCartId === this.cartId) {
+                return;
+            }
+
+            const cartId = this.buyerIdentityCartId = this.cartId;
+
+            try {
+                if (localStorage.getItem(key) === cartId) {
+                    return;
+                }
+            } catch (error) {}
+
+            const identity = await getBuyerIdentity();
+
+            if (! identity) {
+                return;
+            }
+
+            // set separately, so one Shopify rejects (reported with shopify.cart.error, e.g.
+            // an email it considers invalid) doesn't stop the other
+            const { deliveryAddress, ...buyerIdentity } = identity;
+            let response = Object.keys(buyerIdentity).length ? await updateBuyerIdentity(cartId, buyerIdentity) : undefined;
+
+            if (deliveryAddress) {
+                response = await setDeliveryAddress(cartId, deliveryAddress) ?? response;
+            }
+
+            if (response) {
+                try {
+                    localStorage.setItem(key, cartId);
+                } catch (error) {}
+
+                this.updateFromResponse(response);
+            }
         },
 
         /**
@@ -202,6 +243,8 @@ const createStore = (Alpine) => {
             }
 
             localStorage.setItem(cartStorageKey(), this.cartId);
+
+            this.applyBuyerIdentity();
 
             return checkout;
         }
