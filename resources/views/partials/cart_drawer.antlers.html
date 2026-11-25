@@ -74,7 +74,7 @@
             <dl class="mb-3 space-y-1 text-sm" x-show="cart.discount">
                 <div class="flex justify-between">
                     <dt class="text-stone">Items</dt>
-                    <dd x-text="cart.itemsSubtotal"></dd>
+                    <dd x-text="bagItems(cart)"></dd>
                 </div>
                 <div class="flex justify-between">
                     <dt class="text-stone">Discount</dt>
@@ -82,8 +82,8 @@
                 </div>
             </dl>
             <div class="flex items-baseline justify-between">
-                <span class="text-sm text-stone" x-text="cart.discount ? 'Total' : 'Subtotal'"></span>
-                <span class="font-serif text-2xl" x-text="cart.subtotal"></span>
+                <span class="text-sm text-stone">Subtotal</span>
+                <span class="font-serif text-2xl" x-text="bagSubtotal(cart)"></span>
             </div>
             <p class="mt-1 text-xs text-stone">Shipping and taxes are worked out by Shopify at checkout.</p>
             <a :href="cart.checkoutUrl" class="btn btn-primary mt-5 w-full">Checkout with Shopify</a>

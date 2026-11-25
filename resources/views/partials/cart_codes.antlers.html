@@ -42,7 +42,7 @@
 <dl class="mt-6 space-y-2 border-t border-ink/10 pt-6 text-sm">
     <div class="flex justify-between">
         <dt class="text-stone">Items</dt>
-        <dd x-text="cart.itemsSubtotal"></dd>
+        <dd x-text="bagItems(cart)"></dd>
     </div>
     <div class="flex justify-between" x-show="cart.discount || cart.discountCodes.some(discount => discount.applicable)">
         <dt class="text-stone">Discount</dt>
