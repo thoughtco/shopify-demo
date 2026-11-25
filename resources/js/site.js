@@ -76,7 +76,7 @@ Alpine.store('drawer', {
 
 // Surface cart errors
 window.addEventListener('shopify.cart.error', (event) => {
-    Alpine.store('toast').show(event.detail?.message ?? 'Something went wrong talking to Shopify.');
+    Alpine.store('toast').show(event.detail?.errors?.[0]?.message ?? 'Something went wrong talking to Shopify.');
 });
 
 Alpine.store('toast', {

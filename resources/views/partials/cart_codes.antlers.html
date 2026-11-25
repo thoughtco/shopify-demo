@@ -1,0 +1,51 @@
+{{# Discount codes and gift cards, via the addon's statamic.shopify.cart store. Expects `cart` in scope. #}}
+<div class="mt-6 space-y-5 border-t border-ink/10 pt-6" x-data="{ code: '', giftCard: '', busy: false }">
+    <div>
+        <form class="flex gap-2" @submit.prevent="if (! code.trim()) return; busy = true; if (await cart.applyDiscountCode(code.trim())) code = ''; busy = false">
+            <label class="sr-only" for="discount-code">Discount code</label>
+            <input id="discount-code" type="text" x-model="code" placeholder="Discount code" autocomplete="off" class="min-w-0 grow rounded-full border border-ink/10 bg-white px-4 py-2 text-sm">
+            <button type="submit" class="btn btn-secondary px-4 py-2 text-sm" :disabled="busy">Apply</button>
+        </form>
+        <ul class="mt-2 space-y-1.5" x-show="cart.discountCodes.length">
+            <template x-for="discount in cart.discountCodes" :key="discount.code">
+                <li class="flex items-center justify-between gap-3 text-sm">
+                    <span>
+                        <span class="rounded-full px-2.5 py-0.5 font-medium uppercase tracking-wide" :class="discount.applicable ? 'bg-ink text-ivory' : 'bg-ink/10 text-stone line-through'" x-text="discount.code"></span>
+                        <span class="ml-1 text-xs text-stone" x-show="! discount.applicable">isn't valid for your bag</span>
+                    </span>
+                    <button type="button" class="text-xs text-stone link-underline" @click="cart.removeDiscountCode(discount.code)">Remove</button>
+                </li>
+            </template>
+        </ul>
+    </div>
+
+    <div>
+        <form class="flex gap-2" @submit.prevent="if (! giftCard.trim()) return; busy = true; if (await cart.applyGiftCardCode(giftCard.trim())) giftCard = ''; busy = false">
+            <label class="sr-only" for="gift-card">Gift card</label>
+            <input id="gift-card" type="text" x-model="giftCard" placeholder="Gift card" autocomplete="off" class="min-w-0 grow rounded-full border border-ink/10 bg-white px-4 py-2 text-sm">
+            <button type="submit" class="btn btn-secondary px-4 py-2 text-sm" :disabled="busy">Apply</button>
+        </form>
+        <ul class="mt-2 space-y-1.5" x-show="cart.giftCards.length">
+            <template x-for="card in cart.giftCards" :key="card.id">
+                <li class="flex items-center justify-between gap-3 text-sm">
+                    <span>
+                        Gift card •••• <span x-text="card.lastCharacters"></span>
+                        <span class="block text-xs text-stone">Using <span x-text="card.amountUsed"></span>, balance <span x-text="card.balance"></span></span>
+                    </span>
+                    <button type="button" class="text-xs text-stone link-underline" @click="cart.removeGiftCard(card.id)">Remove</button>
+                </li>
+            </template>
+        </ul>
+    </div>
+</div>
+
+<dl class="mt-6 space-y-2 border-t border-ink/10 pt-6 text-sm">
+    <div class="flex justify-between">
+        <dt class="text-stone">Items</dt>
+        <dd x-text="cart.itemsSubtotal"></dd>
+    </div>
+    <div class="flex justify-between" x-show="cart.discount || cart.discountCodes.some(discount => discount.applicable)">
+        <dt class="text-stone">Discount</dt>
+        <dd x-text="cart.discount ? '−' + cart.discount : 'None allocated'"></dd>
+    </div>
+</dl>
