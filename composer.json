@@ -14,7 +14,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "statamic/cms": "^6.0",
-        "thoughtco/shopify": "dev-feature/cart-buyer-identity#86bb0b6 as 9.2.0"
+        "thoughtco/shopify": "dev-feature/buy-now#b7226a8 as 9.2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -131,6 +131,12 @@
                         <span x-show="added" x-cloak>Added ✓</span>
                     </button>
                 </div>
+
+                <button type="button" class="btn btn-accent w-full" @click="buyNow()" :disabled="buyingNow || ! variantExistsAndIsInStock()">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 2 4 13.5h6.5L9.5 22 20 9.5h-6.5L13.5 2Z"/></svg>
+                    <span x-show="! buyingNow">Buy now</span>
+                    <span x-show="buyingNow" x-cloak>Going to checkout…</span>
+                </button>
             </form>
 
             {{# Details: Shopify metafields and taxonomies, plus a Statamic-only field #}}
@@ -155,6 +161,7 @@
 
             {{ partial:partials/under_the_hood title="variants, stock and metafields" class="mt-8" }}
                 <p>The option buttons use the addon's <code>shopifyProduct</code> Alpine component with this product's variants from <code>@{{ shopify:variants }}</code>. Stock and prices come from each variant (or its market, when you switch country), and <strong>Add to bag</strong> creates a Shopify cart through the Storefront API.</p>
+                <p><strong>Buy now</strong> calls the component's <code>buyNow()</code>: it creates a separate cart with just this item (your bag is left as it is) and goes straight to Shopify's checkout, where the store's express buttons (Apple Pay, Google Pay, Shop Pay) are. When you're logged in, your email and address are added to that cart.</p>
                 <p><em>Materials</em> and <em>Care</em> are Shopify metafields, imported onto the entry. <em>Why we love it</em> is a Statamic field: the import never overwrites it.</p>
                 {{ slot:code }}
 @{{ variants = {shopify:variants} }}
@@ -162,6 +169,7 @@
     <template x-for="(name, key) in options">…option buttons…</template>
     <p x-text="$store.market.format(getVariantPrice(selectedVariant))"></p>
     <button :disabled="! variantExistsAndIsInStock()">Add to bag</button>
+    <button type="button" @click="buyNow()" :disabled="buyingNow || ! variantExistsAndIsInStock()">Buy now</button>
 </div>
                 {{ /slot:code }}
             {{ /partial:partials/under_the_hood }}

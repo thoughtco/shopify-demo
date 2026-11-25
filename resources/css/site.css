@@ -104,6 +104,17 @@
     }
 }
 
+@utility btn-accent {
+    border: 1px solid color-mix(in oklab, var(--color-gold-dark) 55%, transparent);
+    background-color: rgb(255 255 255 / 0.6);
+    color: var(--color-gold-dark);
+
+    &:hover:not(:disabled) {
+        border-color: var(--color-gold-dark);
+        background-color: var(--color-sand);
+    }
+}
+
 @utility chip {
     display: inline-flex;
     align-items: center;
