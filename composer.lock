@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce90d715633969e0a9a511969c3550f9",
+    "content-hash": "c10d13b7ce27f4f28a48a6beca52e74b",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9222,16 +9222,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "v9.0.1",
+            "version": "dev-feature/selling-plans",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "3fea1c0dae9f9288ae3353a223325a93871b074b"
+                "reference": "1c123ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/3fea1c0dae9f9288ae3353a223325a93871b074b",
-                "reference": "3fea1c0dae9f9288ae3353a223325a93871b074b",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/1c123ec",
+                "reference": "1c123ec",
                 "shasum": ""
             },
             "require": {
@@ -9286,10 +9286,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/v9.0.1"
+                "source": "https://github.com/thoughtco/shopify/tree/feature/selling-plans"
             },
-            "time": "2026-11-24T18:49:23+00:00",
-            "published-time": "2026-11-24T18:50:11+00:00"
+            "time": "2026-11-25T07:24:08+00:00",
+            "published-time": "2026-11-25T07:24:14+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12695,9 +12695,18 @@
             "published-time": "2025-12-08T11:19:39+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "thoughtco/shopify",
+            "version": "dev-feature/selling-plans",
+            "alias": "9.1.0",
+            "alias_normalized": "9.1.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "thoughtco/shopify": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

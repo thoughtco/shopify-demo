@@ -40,6 +40,22 @@ const cartQuery = `
               }
             }
             quantity
+            sellingPlanAllocation {
+              sellingPlan {
+                id
+                name
+                options {
+                  name
+                  value
+                }
+              }
+              priceAdjustments {
+                price {
+                  amount
+                  currencyCode
+                }
+              }
+            }
           }
         }
       }
