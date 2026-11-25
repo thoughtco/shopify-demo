@@ -1,4 +1,4 @@
-import { addLines, getOrCreateCart, removeLine, setCartAttributes, setCartNote, updateBuyerCountry, updateLineQuantity } from './cart.js';
+import { addGiftCardCodes, addLines, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, updateBuyerCountry, updateDiscountCodes, updateLineQuantity } from './cart.js';
 import { cartStorageKey, formatMoney } from './money.js';
 
 const createStore = (Alpine) => {
@@ -6,6 +6,12 @@ const createStore = (Alpine) => {
         cartId: null,
         checkoutUrl: '',
         currencyCode: null,
+        discount: null,
+        discountAmount: 0,
+        discountCodes: [],
+        giftCards: [],
+        itemsSubtotal: null,
+        itemsSubtotalAmount: null,
         lineItems: [],
         market: window.shopifyConfig?.market,
         note: '',
@@ -33,12 +39,69 @@ const createStore = (Alpine) => {
             });
         },
 
+        /**
+         * Add a discount code, keeping the cart's other codes. A code that doesn't
+         * apply to the cart is kept with applicable: false (see discountCodes).
+         */
+        async applyDiscountCode(code) {
+            code = (code ?? '').trim();
+
+            if (! code || ! await this.ensureCart()) {
+                return;
+            }
+
+            const codes = this.discountCodes.map(discount => discount.code)
+                .filter(existing => existing.toLowerCase() !== code.toLowerCase());
+
+            return this.updateFromResponse(await updateDiscountCodes(this.cartId, [...codes, code]));
+        },
+
+        async applyGiftCardCode(code) {
+            code = (code ?? '').trim();
+
+            if (! code || ! await this.ensureCart()) {
+                return;
+            }
+
+            return this.updateFromResponse(await addGiftCardCodes(this.cartId, [code]));
+        },
+
+        /**
+         * The cart id, creating a cart first if there isn't one yet.
+         */
+        async ensureCart() {
+            if (! this.cartId) {
+                this.updateFromResponse(await getOrCreateCart());
+            }
+
+            return this.cartId;
+        },
+
         formatCurrency(amount, currencyCode = null) {
             return formatMoney(amount, currencyCode ?? this.currencyCode);
         },
 
         getItems() {
             return this.lineItems;
+        },
+
+        async removeDiscountCode(code) {
+            if (! this.cartId) {
+                return;
+            }
+
+            const codes = this.discountCodes.map(discount => discount.code)
+                .filter(existing => existing.toLowerCase() !== (code ?? '').toLowerCase());
+
+            return this.updateFromResponse(await updateDiscountCodes(this.cartId, codes));
+        },
+
+        async removeGiftCard(id) {
+            if (! this.cartId) {
+                return;
+            }
+
+            return this.updateFromResponse(await removeGiftCardCodes(this.cartId, [id]));
         },
 
         removeLine(id) {
@@ -64,6 +127,8 @@ const createStore = (Alpine) => {
             }
 
             const currencyCode = checkout.cost.totalAmount.currencyCode;
+            const discountedAmount = (allocations) => (allocations ?? []).reduce((total, allocation) => total + parseFloat(allocation.discountedAmount.amount), 0);
+            let discountAmount = 0;
             let mappedLineItems = [];
             for (let line of checkout.lines.edges) {
                 line = line.node;
@@ -73,9 +138,14 @@ const createStore = (Alpine) => {
 
                 let qty = line.quantity;
                 let amount = parseFloat(line.cost.amountPerQuantity.amount);
+                let lineDiscount = discountedAmount(line.discountAllocations);
+                discountAmount += lineDiscount;
 
                 mappedLineItems.push({
                     id: line.id,
+                    // the line's discounts (from discount codes and automatic discounts)
+                    discount: lineDiscount ? this.formatCurrency(lineDiscount, currencyCode) : null,
+                    discountAmount: lineDiscount,
                     title: line.merchandise.product.title,
                     variant: {
                         title: line.merchandise.title,
@@ -100,8 +170,31 @@ const createStore = (Alpine) => {
             this.subtotal = this.formatCurrency(checkout.cost.totalAmount.amount, currencyCode);
             this.subtotalAmount = parseFloat(checkout.cost.totalAmount.amount);
             this.checkoutUrl = checkout.checkoutUrl;
+            // order-level discounts aren't allocated to the lines, so add the cart's own
+            // allocations (deprecated in 2026-01, but the only place these are returned)
+            discountAmount += discountedAmount(checkout.discountAllocations);
+
+            this.discount = discountAmount ? this.formatCurrency(discountAmount, currencyCode) : null;
+            this.discountAmount = discountAmount;
+            this.discountCodes = (checkout.discountCodes ?? []).map(({ code, applicable }) => ({ code, applicable }));
+            this.giftCards = (checkout.appliedGiftCards ?? []).map(card => ({
+                id: card.id,
+                lastCharacters: card.lastCharacters,
+                amountUsed: this.formatCurrency(card.amountUsed.amount, card.amountUsed.currencyCode),
+                amountUsedAmount: parseFloat(card.amountUsed.amount),
+                balance: this.formatCurrency(card.balance.amount, card.balance.currencyCode),
+                balanceAmount: parseFloat(card.balance.amount),
+                currencyCode: card.amountUsed.currencyCode,
+            }));
+
+            if (checkout.cost.subtotalAmount) {
+                this.itemsSubtotal = this.formatCurrency(checkout.cost.subtotalAmount.amount, currencyCode);
+                this.itemsSubtotalAmount = parseFloat(checkout.cost.subtotalAmount.amount);
+            }
 
             localStorage.setItem(cartStorageKey(), this.cartId);
+
+            return checkout;
         }
     });
 }

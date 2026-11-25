@@ -7,6 +7,10 @@ const cartQuery = `
       }
       checkoutUrl
       cost {
+        subtotalAmount {
+          amount
+          currencyCode
+        }
         totalAmount {
           amount
           currencyCode
@@ -18,6 +22,12 @@ const cartQuery = `
             attributes {
                 key
                 value
+            }
+            discountAllocations {
+              discountedAmount {
+                amount
+                currencyCode
+              }
             }
             cost {
               amountPerQuantity {
@@ -44,6 +54,28 @@ const cartQuery = `
         }
       }
       note
+      discountAllocations {
+        discountedAmount {
+          amount
+          currencyCode
+        }
+      }
+      discountCodes {
+        code
+        applicable
+      }
+      appliedGiftCards {
+        id
+        lastCharacters
+        amountUsed {
+          amount
+          currencyCode
+        }
+        balance {
+          amount
+          currencyCode
+        }
+      }
 `;
 
 /**
@@ -252,14 +284,85 @@ const updateBuyerCountry = async (cartId, countryCode) => {
     return (await run('cartBuyerIdentityUpdate', query, { cartId, buyerIdentity: { countryCode } }))?.cart;
 };
 
+/**
+ * Set the cart's discount codes, replacing any it already has (pass [] to remove them
+ * all). A code that doesn't apply to the cart isn't an error: it's returned in the
+ * cart's discountCodes with applicable: false.
+ */
+const updateDiscountCodes = async (cartId, codes) => {
+    const query = operation('mutation', 'cartDiscountCodesUpdate', ['$cartId: ID!', '$discountCodes: [String!]!'], `
+      cartDiscountCodesUpdate(cartId: $cartId, discountCodes: $discountCodes) {
+        cart {
+          ${cartQuery}
+        }
+        ${userErrors}
+      }`);
+
+    return (await run('cartDiscountCodesUpdate', query, { cartId, discountCodes: codes }))?.cart;
+};
+
+/**
+ * Add gift card codes to the cart, keeping any already applied. Shopify doesn't return
+ * a userError for a code that isn't a gift card, it just doesn't apply it, so a code
+ * with no applied gift card ending in its last characters is reported as an error.
+ */
+const addGiftCardCodes = async (cartId, codes) => {
+    const query = operation('mutation', 'cartGiftCardCodesAdd', ['$cartId: ID!', '$giftCardCodes: [String!]!'], `
+      cartGiftCardCodesAdd(cartId: $cartId, giftCardCodes: $giftCardCodes) {
+        cart {
+          ${cartQuery}
+        }
+        ${userErrors}
+      }`);
+
+    const cart = (await run('cartGiftCardCodesAdd', query, { cartId, giftCardCodes: codes }))?.cart;
+
+    if (! cart) {
+        return;
+    }
+
+    const applied = (cart.appliedGiftCards ?? []).map(card => card.lastCharacters.toLowerCase());
+    const notApplied = codes.filter(code => ! applied.includes(code.replace(/\s/g, '').slice(-4).toLowerCase()));
+
+    if (notApplied.length) {
+        reportError('cartGiftCardCodesAdd', notApplied.map(code => ({
+            field: ['giftCardCodes'],
+            code: 'GIFT_CARD_NOT_APPLIED',
+            message: 'This gift card code isn\'t valid.',
+        })));
+
+        return;
+    }
+
+    return cart;
+};
+
+/**
+ * Remove gift cards from the cart, by the ids in the cart's appliedGiftCards.
+ */
+const removeGiftCardCodes = async (cartId, ids) => {
+    const query = operation('mutation', 'cartGiftCardCodesRemove', ['$cartId: ID!', '$appliedGiftCardIds: [ID!]!'], `
+      cartGiftCardCodesRemove(cartId: $cartId, appliedGiftCardIds: $appliedGiftCardIds) {
+        cart {
+          ${cartQuery}
+        }
+        ${userErrors}
+      }`);
+
+    return (await run('cartGiftCardCodesRemove', query, { cartId, appliedGiftCardIds: ids }))?.cart;
+};
+
 export {
+    addGiftCardCodes,
     addLines,
     createFreshCart,
     getExistingCart,
     getOrCreateCart,
+    removeGiftCardCodes,
     removeLine,
     setCartAttributes,
     setCartNote,
     updateBuyerCountry,
+    updateDiscountCodes,
     updateLineQuantity,
 };
