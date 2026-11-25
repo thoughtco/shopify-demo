@@ -31,11 +31,14 @@
     </div>
     <div>
         <label for="{{ prefix }}-country" class="block text-sm font-medium">Country</label>
-        <select id="{{ prefix }}-country" name="countryCode" autocomplete="country" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
-            <option value="GB" {{ (! country || country == 'United Kingdom') ?= 'selected' }}>United Kingdom</option>
-            <option value="IE" {{ country == 'Ireland' ?= 'selected' }}>Ireland</option>
-            <option value="US" {{ country == 'United States' ?= 'selected' }}>United States</option>
-        </select>
+        <div class="relative mt-1.5">
+            <select id="{{ prefix }}-country" name="countryCode" autocomplete="country" class="w-full appearance-none rounded-full border border-ink/15 bg-white py-2.5 pr-10 pl-4">
+                <option value="GB" {{ (! country || country == 'United Kingdom') ?= 'selected' }}>United Kingdom</option>
+                <option value="IE" {{ country == 'Ireland' ?= 'selected' }}>Ireland</option>
+                <option value="US" {{ country == 'United States' ?= 'selected' }}>United States</option>
+            </select>
+            <svg class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-stone" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+        </div>
     </div>
     <div>
         <label for="{{ prefix }}-province" class="block text-sm font-medium">County or state code <span class="font-normal text-stone">(if needed)</span></label>
