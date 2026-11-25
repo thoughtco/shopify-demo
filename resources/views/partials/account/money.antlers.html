@@ -1,0 +1,2 @@
+{{# An order amount ({ amount, currencyCode }) in its own currency, formatted in the browser. Usage: {{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }} #}}
+<span x-data x-text="new Intl.NumberFormat(document.documentElement.lang || undefined, { style: 'currency', currency: '{{ price:currencyCode }}' }).format({{ price:amount }})">{{ price:amount }} {{ price:currencyCode }}</span>

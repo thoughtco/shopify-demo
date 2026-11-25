@@ -1,0 +1,53 @@
+{{# Shown on the account pages when nobody is logged in: Statamic's login form, prefilled with the shared demo customer #}}
+<div class="mt-10 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+    <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 sm:p-8">
+        <h2 class="font-serif text-2xl">Log in</h2>
+
+        {{ if config:demo.read_only }}
+            <div class="mt-4 rounded-2xl border border-dashed border-gold/50 bg-gold/5 px-4 py-3 text-sm leading-relaxed text-stone">
+                <p><span class="font-medium text-ink">Demo login</span>: everyone shares this customer account, and it's filled in for you.</p>
+                <p class="mt-1">Email: <code class="font-mono text-ink">{{ config:demo.cp_email }}</code> · Password: <code class="font-mono text-ink">{{ config:demo.cp_password }}</code></p>
+            </div>
+        {{ /if }}
+
+        {{ user:login_form :redirect="current_uri" class="mt-6 space-y-4" }}
+            {{ if errors }}
+                <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">
+                    {{ errors }}<li>{{ value }}</li>{{ /errors }}
+                </ul>
+            {{ /if }}
+
+            <div>
+                <label for="login-email" class="block text-sm font-medium">Email</label>
+                <input id="login-email" type="email" name="email" value="{{ old:email ?? (config:demo.read_only ? config:demo.cp_email : '') }}" required autocomplete="email" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+            </div>
+            <div>
+                <label for="login-password" class="block text-sm font-medium">Password</label>
+                <input id="login-password" type="password" name="password" value="{{ config:demo.read_only ? config:demo.cp_password : '' }}" required autocomplete="current-password" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+            </div>
+            <button type="submit" class="btn btn-primary w-full">Log in</button>
+        {{ /user:login_form }}
+    </div>
+
+    <div class="space-y-5 text-stone">
+        <p class="font-serif text-2xl text-ink">Your account, from Shopify</p>
+        <p>Statamic handles the login. The user is linked to a Shopify customer, and the addon's tags read that customer from Shopify's Admin API:</p>
+        <ul class="space-y-3">
+            <li><span class="font-medium text-ink">Profile</span>: your name and email, kept in step with Shopify.</li>
+            <li><span class="font-medium text-ink">Addresses</span>: the customer's saved addresses, which checkout uses too.</li>
+            <li><span class="font-medium text-ink">Orders</span>: everything bought with this account, with its status in Shopify.</li>
+        </ul>
+
+        {{ partial:partials/under_the_hood title="logging in" }}
+            <p>A Statamic user logs in with Statamic's <code>@{{ user:login_form }}</code>. The user's <code>shopify_id</code> links them to a Shopify customer: the addon sets it when a customer webhook arrives, or when a user is saved with <code>update_users_in_shopify</code> on.</p>
+            <p>Once you're logged in, checkout is pre-filled with your email and default address too (<code>SHOPIFY_CART_BUYER_IDENTITY</code>).</p>
+            {{ slot:code }}
+@{{ user:login_form redirect="/account" }}
+    <input type="email" name="email">
+    <input type="password" name="password">
+    <button>Log in</button>
+@{{ /user:login_form }}
+            {{ /slot:code }}
+        {{ /partial:partials/under_the_hood }}
+    </div>
+</div>

@@ -1,0 +1,33 @@
+{{#
+    The account pages' frame: heading, account navigation and the read-only notice,
+    or the login form when nobody is logged in.
+    Usage: {{ partial:partials/account/shell }} page content {{ /partial:partials/account/shell }}
+#}}
+<section class="container-page pt-12 pb-16">
+    {{ if segment_2 }}<p class="eyebrow">Your account</p>{{ /if }}
+    <h1 class="mt-2 font-serif text-5xl tracking-tight">{{ title }}</h1>
+
+    {{ if logged_in }}
+        <div class="mt-10 grid gap-10 lg:grid-cols-[13rem_1fr]">
+            <nav class="flex gap-1 overflow-x-auto text-sm lg:flex-col" aria-label="Account">
+                {{ nav:account }}
+                    <a href="{{ url }}" class="shrink-0 rounded-full px-4 py-2 transition hover:bg-sand {{ is_current ?= 'bg-sand font-medium text-ink' }}{{ ! is_current ?= 'text-stone' }}" {{ is_current ?= 'aria-current="page"' }}>{{ title }}</a>
+                {{ /nav:account }}
+                <a href="{{ user:logout_url redirect='/' }}" class="shrink-0 rounded-full px-4 py-2 text-stone transition hover:bg-sand lg:mt-4">Log out</a>
+            </nav>
+
+            <div class="min-w-0 space-y-8">
+                {{ if config:demo.read_only }}
+                    <p class="rounded-2xl border border-dashed border-gold/50 bg-gold/5 px-5 py-3 text-sm text-stone">
+                        <span class="font-medium text-ink">You're logged in as the shared demo customer.</span>
+                        Look around as much as you like: everyone uses this account, so changes to the profile and addresses aren't saved.
+                    </p>
+                {{ /if }}
+
+                {{ slot }}
+            </div>
+        </div>
+    {{ else }}
+        {{ partial:partials/account/login }}
+    {{ /if }}
+</section>

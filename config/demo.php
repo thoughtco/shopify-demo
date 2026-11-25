@@ -3,8 +3,10 @@
 return [
 
     /*
-     * The public demo login for the control panel. In read-only mode, the control
-     * panel can be browsed but nothing can be saved (see ReadOnlyControlPanel).
+     * The public demo login for the control panel and the customer account pages.
+     * In read-only mode the control panel can be browsed but nothing can be saved
+     * (see ReadOnlyControlPanel), and on the frontend the account can't be changed
+     * (see ReadOnlyAccount).
      * Turn it off with DEMO_READ_ONLY=false when you need to change something.
      */
     'read_only' => env('DEMO_READ_ONLY', true),

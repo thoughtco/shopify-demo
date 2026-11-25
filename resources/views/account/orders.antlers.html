@@ -1,0 +1,92 @@
+{{ partial:partials/account/shell }}
+    {{ shopify:customer:orders paginate="5" sort="created_at:desc" }}
+        {{ if orders_count }}
+            <p class="text-stone">{{ orders_count }} {{ orders_count == 1 ? 'order' : 'orders' }}, newest first.</p>
+
+            <ul class="space-y-4">
+                {{ orders }}
+                    <li>
+                        <details class="group rounded-3xl border border-ink/10 bg-white/60 open:bg-white/80">
+                            <summary class="flex cursor-pointer list-none flex-wrap items-center gap-x-6 gap-y-2 p-5 sm:p-6">
+                                <span class="font-medium">{{ name }}</span>
+                                <span class="text-sm text-stone">{{ createdAt | format('j F Y') }}</span>
+                                {{ if cancelledAt }}
+                                    <span class="rounded-full bg-rose/10 px-2.5 py-0.5 text-xs text-rose">Cancelled</span>
+                                {{ else }}
+                                    <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFulfillmentStatus | replace('_', ' ') | lower | ucfirst }}</span>
+                                {{ /if }}
+                                <span class="ml-auto font-medium">{{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }}</span>
+                                <svg class="size-4 text-stone transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+                            </summary>
+
+                            <div class="border-t border-ink/10 p-5 sm:p-6">
+                                <ul class="divide-y divide-ink/10">
+                                    {{ lineItems:nodes }}
+                                        <li class="flex items-center gap-4 py-3">
+                                            <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-sand">
+                                                {{ if image:url }}<img src="{{ image:url }}" alt="" class="size-full object-cover" loading="lazy">{{ /if }}
+                                            </div>
+                                            <div class="grow">
+                                                <p>{{ title }}</p>
+                                                <p class="text-sm text-stone">Qty {{ quantity }}</p>
+                                            </div>
+                                            <p class="text-sm">{{ partial:partials/account/money :price="discountedUnitPriceSet:presentmentMoney" }} each</p>
+                                        </li>
+                                    {{ /lineItems:nodes }}
+                                </ul>
+
+                                <div class="mt-5 grid gap-6 text-sm sm:grid-cols-3">
+                                    {{ if shippingAddress }}
+                                        <div>
+                                            <p class="eyebrow">Delivery</p>
+                                            <p class="mt-2 leading-relaxed">{{ shippingAddress:name }}<br>{{ shippingAddress:address1 }}<br>{{ shippingAddress:city }} {{ shippingAddress:zip }}<br>{{ shippingAddress:country }}</p>
+                                        </div>
+                                    {{ /if }}
+                                    <div>
+                                        <p class="eyebrow">Payment</p>
+                                        <dl class="mt-2 space-y-1">
+                                            {{ if discountCodes }}<div class="flex justify-between gap-4"><dt class="text-stone">Discount ({{ discountCodes | join(', ') }})</dt><dd>−{{ partial:partials/account/money :price="totalDiscountsSet:presentmentMoney" }}</dd></div>{{ /if }}
+                                            <div class="flex justify-between gap-4"><dt class="text-stone">Total</dt><dd>{{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }}</dd></div>
+                                            <div class="flex justify-between gap-4"><dt class="text-stone">Paid</dt><dd>{{ partial:partials/account/money :price="totalReceivedSet:presentmentMoney" }}</dd></div>
+                                        </dl>
+                                    </div>
+                                    <div class="sm:text-right">
+                                        <a href="{{ statusPageUrl }}" class="btn btn-secondary px-4 py-2" target="_blank" rel="noopener">Order status in Shopify</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </li>
+                {{ /orders }}
+            </ul>
+
+            {{ if paginate:total_pages > 1 }}
+                <nav class="flex items-center justify-between text-sm" aria-label="Order pages">
+                    {{ if paginate:prev_page }}<a href="{{ paginate:prev_page }}" class="btn btn-secondary px-4 py-2">Newer</a>{{ else }}<span></span>{{ /if }}
+                    <span class="text-stone">Page {{ paginate:current_page }} of {{ paginate:total_pages }}</span>
+                    {{ if paginate:next_page }}<a href="{{ paginate:next_page }}" class="btn btn-secondary px-4 py-2">Older</a>{{ else }}<span></span>{{ /if }}
+                </nav>
+            {{ /if }}
+        {{ else }}
+            <div class="rounded-3xl bg-sand px-6 py-12 text-center">
+                <p class="font-serif text-2xl">No orders yet</p>
+                <p class="mt-2 text-stone">Orders placed while you're logged in show up here.</p>
+                <a href="/shop" class="btn btn-primary mt-6">Browse the shop</a>
+            </div>
+        {{ /if }}
+    {{ /shopify:customer:orders }}
+
+    {{ partial:partials/under_the_hood title="order history" }}
+        <p><code>@{{ shopify:customer:orders }}</code> asks Shopify's Admin API for the logged in customer's orders, sorted by Shopify and paginated, fetching only as many as the page needs. Each order has its items, prices in the currency it was paid in, addresses, discount codes, status and a link to Shopify's order status page.</p>
+        {{ slot:code }}
+@{{ shopify:customer:orders paginate="5" sort="created_at:desc" }}
+    @{{ orders }}
+        @{{ name }} · @{{ createdAt | format('j F Y') }} · @{{ displayFulfillmentStatus }}
+        @{{ lineItems:nodes }}@{{ quantity }} × @{{ title }}@{{ /lineItems:nodes }}
+        <a href="@{{ statusPageUrl }}">Order status</a>
+    @{{ /orders }}
+    @{{ paginate }}…@{{ /paginate }}
+@{{ /shopify:customer:orders }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}

@@ -1,0 +1,84 @@
+{{ partial:partials/account/shell }}
+    {{ if {session:message} }}
+        <p class="rounded-2xl bg-sage/15 px-4 py-3 text-sm text-sage">{{ session:message }}</p>
+    {{ /if }}
+    {{ get_errors:all }}
+        <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">{{ messages }}<li>{{ message }}</li>{{ /messages }}</ul>
+    {{ /get_errors:all }}
+
+    {{ shopify:customer:addresses }}
+        {{ if addresses_count }}
+            <ul class="grid gap-5 md:grid-cols-2">
+                {{ addresses }}
+                    <li class="rounded-3xl border border-ink/10 bg-white/60 p-6" x-data="{ editing: false }">
+                        <address class="not-italic leading-relaxed">
+                            <span class="font-medium">{{ firstName }} {{ lastName }}</span><br>
+                            {{ if company }}{{ company }}<br>{{ /if }}
+                            {{ address1 }}<br>
+                            {{ if address2 }}{{ address2 }}<br>{{ /if }}
+                            {{ city }}{{ if province }}, {{ province }}{{ /if }} {{ zip }}<br>
+                            {{ country }}
+                            {{ if phone }}<br><span class="text-stone">{{ phone }}</span>{{ /if }}
+                        </address>
+
+                        <div class="mt-5 flex items-center gap-4 text-sm" x-show="! editing">
+                            <button type="button" class="btn btn-secondary px-4 py-2" @click="editing = true">Edit</button>
+                            <form method="POST" action="{{ route:statamic.shopify.address.destroy :id="id" }}">
+                                {{ csrf_field }}
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="text-stone link-underline">Delete</button>
+                            </form>
+                        </div>
+
+                        <div x-show="editing" x-cloak class="mt-6 border-t border-ink/10 pt-6">
+                            {{ shopify:address_form :address_id="id" :redirect="current_uri" class="space-y-5" }}
+                                {{ partial:partials/account/address_fields :prefix="'edit-' + id" }}
+                                <div class="flex items-center gap-4">
+                                    <button type="submit" class="btn btn-primary">Save address</button>
+                                    <button type="button" class="text-sm text-stone link-underline" @click="editing = false">Cancel</button>
+                                </div>
+                            {{ /shopify:address_form }}
+                        </div>
+                    </li>
+                {{ /addresses }}
+            </ul>
+        {{ else }}
+            <div class="rounded-3xl bg-sand px-6 py-12 text-center">
+                <p class="font-serif text-2xl">No saved addresses yet</p>
+                <p class="mt-2 text-stone">Add one below and checkout will offer it.</p>
+            </div>
+        {{ /if }}
+    {{ /shopify:customer:addresses }}
+
+    <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 sm:p-8" x-data="{ open: false }">
+        <div class="flex items-center justify-between gap-4">
+            <h2 class="font-serif text-2xl">Add an address</h2>
+            <button type="button" class="btn btn-secondary px-4 py-2 text-sm" @click="open = ! open" x-text="open ? 'Close' : 'New address'">New address</button>
+        </div>
+        <div x-show="open" x-cloak class="mt-6">
+            {{ shopify:address_form :redirect="current_uri" class="space-y-5" }}
+                {{ partial:partials/account/address_fields prefix="new" firstName="" lastName="" company="" address1="" address2="" city="" zip="" country="" phone="" }}
+                <button type="submit" class="btn btn-primary">Save address</button>
+            {{ /shopify:address_form }}
+        </div>
+    </div>
+
+    {{ partial:partials/under_the_hood title="addresses" }}
+        <p><code>@{{ shopify:customer:addresses }}</code> lists the customer's addresses from Shopify, and <code>@{{ shopify:address_form }}</code> posts to the addon's address endpoints, which create, update or delete an address on the logged in user's Shopify customer (never one named in the request). Shopify's checkout offers the same addresses.</p>
+        <p>Delete is a <code>DELETE</code> to <code>/!/shopify/address/{id}</code>. On this demo every change is refused before it reaches Shopify, as everyone shares the account.</p>
+        {{ slot:code }}
+@{{ shopify:customer:addresses }}
+    @{{ addresses }}
+        @{{ firstName }} @{{ lastName }}, @{{ address1 }}, @{{ city }} @{{ zip }}
+
+        @{{ shopify:address_form :address_id="id" redirect="/account/addresses" }}
+            <input name="firstName" value="@{{ firstName }}">
+            …
+            <select name="countryCode">…</select>
+            <button>Save address</button>
+        @{{ /shopify:address_form }}
+    @{{ /addresses }}
+@{{ /shopify:customer:addresses }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}

@@ -30,5 +30,10 @@
         {{ partial:partials/footer }}
         {{ partial:partials/cart_drawer }}
         {{ partial:partials/toast }}
+
+        {{# a change the shared demo account refused (see ReadOnlyAccount) #}}
+        {{ if {session:has key="demo_read_only"} }}
+            <div x-init="$store.toast.show($el.dataset.message)" data-message="{{ session:demo_read_only }}" hidden></div>
+        {{ /if }}
     </body>
 </html>
