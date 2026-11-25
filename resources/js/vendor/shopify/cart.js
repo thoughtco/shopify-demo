@@ -392,7 +392,7 @@ const updateBuyerIdentity = async (cartId, buyerIdentity) => {
 /**
  * Set the cart's delivery address (a CartDeliveryAddressInput: firstName, lastName,
  * address1, city, provinceCode, countryCode, zip...), replacing any it already has,
- * so Shopify's checkout is pre-filled with it.
+ * so Shopify's checkout is pre-filled with it. Pass null to remove it.
  */
 const setDeliveryAddress = async (cartId, deliveryAddress) => {
     const query = operation('mutation', 'cartDeliveryAddressesReplace', ['$cartId: ID!', '$addresses: [CartSelectableAddressInput!]!'], `
@@ -405,13 +405,14 @@ const setDeliveryAddress = async (cartId, deliveryAddress) => {
 
     return (await run('cartDeliveryAddressesReplace', query, {
         cartId,
-        addresses: [{ address: { deliveryAddress }, selected: true }],
+        addresses: deliveryAddress ? [{ address: { deliveryAddress }, selected: true }] : [],
     }))?.cart;
 };
 
 /**
  * The logged in customer's buyer identity from the site (shopify.cart.buyer_identity),
- * or null for guests, users not linked to a Shopify customer, or when it's off.
+ * or null for guests, users not linked to a Shopify customer, or when it's off. In
+ * markets mode its deliveryAddress is one in the market's country, if they have one.
  */
 const getBuyerIdentity = async () => {
     const config = (typeof window !== 'undefined' ? window.shopifyConfig : null) ?? {};
@@ -420,10 +421,22 @@ const getBuyerIdentity = async () => {
         return null;
     }
 
-    const params = config.store ? `?store=${encodeURIComponent(config.store)}` : '';
+    // the store's customer, and in markets mode an address in the market's country (a
+    // delivery address decides the checkout's market and currency)
+    const params = new URLSearchParams();
+
+    if (config.store) {
+        params.set('store', config.store);
+    }
+
+    if (marketCountry()) {
+        params.set('country', marketCountry());
+    }
+
+    const query = params.toString() ? `?${params}` : '';
 
     try {
-        const response = await fetch(config.buyerIdentityUrl + params, {
+        const response = await fetch(config.buyerIdentityUrl + query, {
             credentials: 'same-origin',
             headers: { Accept: 'application/json' },
         });

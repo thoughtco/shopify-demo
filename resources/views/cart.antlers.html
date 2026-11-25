@@ -49,7 +49,7 @@
 
             <div class="mt-4 flex items-baseline justify-between border-t border-ink/10 pt-4">
                 <span class="text-stone">Subtotal</span>
-                <span class="font-serif text-3xl" x-text="bagSubtotal(cart)"></span>
+                <span class="font-serif text-3xl" x-text="cart.itemsTotal"></span>
             </div>
             <p class="mt-1 text-xs text-stone">Shipping and taxes are worked out at checkout.</p>
             <a :href="cart.checkoutUrl" class="btn btn-primary mt-6 w-full">Checkout with Shopify</a>

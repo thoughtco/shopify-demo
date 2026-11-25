@@ -1,0 +1,92 @@
+{{ shopify:customer:order :id="segment_3" }}
+{{ partial:partials/account/shell :heading="logged_in ? (not_found ? 'Order not found' : 'Order ' + name) : 'Your order'" }}
+    <a href="/account/orders" class="inline-flex items-center gap-1 text-sm text-stone link-underline">
+        <svg class="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 0 1-.02 1.06L8.83 10l3.94 3.71a.75.75 0 1 1-1.04 1.08l-4.5-4.25a.75.75 0 0 1 0-1.08l4.5-4.25a.75.75 0 0 1 1.06.02Z" clip-rule="evenodd" /></svg>
+        All orders
+    </a>
+
+    {{ if not_found }}
+        <div class="rounded-3xl bg-sand px-6 py-12 text-center">
+            <p class="font-serif text-2xl">We couldn't find that order</p>
+            <p class="mt-2 text-stone">It isn't one of the orders in your account.</p>
+        </div>
+    {{ else }}
+        <div class="flex flex-wrap items-center gap-3 text-sm">
+            <span class="text-stone">Placed {{ createdAt | format('j F Y, H:i') }}</span>
+            {{ if cancelledAt }}
+                <span class="rounded-full bg-rose/10 px-2.5 py-0.5 text-xs text-rose">Cancelled {{ cancelledAt | format('j F') }}</span>
+            {{ else }}
+                <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFulfillmentStatus | replace('_', ' ') | lower | ucfirst }}</span>
+            {{ /if }}
+            <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFinancialStatus | replace('_', ' ') | lower | ucfirst }}</span>
+            <a href="{{ statusPageUrl }}" class="ml-auto btn btn-secondary px-4 py-2" target="_blank" rel="noopener">Order status in Shopify</a>
+        </div>
+
+        <div class="grid gap-8 xl:grid-cols-[1fr_20rem]">
+            <ul class="divide-y divide-ink/10 rounded-3xl border border-ink/10 bg-white/60 px-5 sm:px-6">
+                {{ lineItems:nodes }}
+                    <li class="flex items-center gap-4 py-4">
+                        <div class="size-16 shrink-0 overflow-hidden rounded-xl bg-sand">
+                            {{ if image:url }}<img src="{{ image:url }}" alt="" class="size-full object-cover" loading="lazy">{{ /if }}
+                        </div>
+                        <div class="grow">
+                            <p class="font-medium">{{ title }}</p>
+                            <p class="text-sm text-stone">{{ quantity }} × {{ discountedUnitPriceSet:presentmentMoney | shopify_money }}</p>
+                        </div>
+                        {{ if discountedUnitPriceSet:presentmentMoney:amount != originalUnitPriceSet:presentmentMoney:amount }}
+                            <p class="text-sm text-stone line-through">{{ originalUnitPriceSet:presentmentMoney | shopify_money }}</p>
+                        {{ /if }}
+                    </li>
+                {{ /lineItems:nodes }}
+            </ul>
+
+            <div class="h-fit rounded-3xl bg-sand p-6 text-sm">
+                <dl class="space-y-2">
+                    <div class="flex justify-between gap-4"><dt class="text-stone">Subtotal</dt><dd>{{ subtotalPriceSet:presentmentMoney | shopify_money }}</dd></div>
+                    {{ if discountCodes }}
+                        <div class="flex justify-between gap-4"><dt class="text-stone">Discount <span class="uppercase">({{ discountCodes | join(', ') }})</span></dt><dd>−{{ totalDiscountsSet:presentmentMoney | shopify_money }}</dd></div>
+                    {{ /if }}
+                    {{ if requiresShipping }}
+                        <div class="flex justify-between gap-4"><dt class="text-stone">Shipping</dt><dd>{{ totalShippingPriceSet:presentmentMoney | shopify_money }}</dd></div>
+                    {{ /if }}
+                    <div class="flex justify-between gap-4"><dt class="text-stone">Tax</dt><dd>{{ totalTaxSet:presentmentMoney | shopify_money }}</dd></div>
+                    <div class="flex justify-between gap-4 border-t border-ink/10 pt-3 text-base"><dt>Total</dt><dd class="font-medium">{{ totalPriceSet:presentmentMoney | shopify_money }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-stone">Paid</dt><dd>{{ totalReceivedSet:presentmentMoney | shopify_money }}</dd></div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            {{ if shippingAddress }}
+                <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 text-sm leading-relaxed">
+                    <p class="eyebrow">Delivery</p>
+                    <address class="mt-3 not-italic">{{ shippingAddress:name }}<br>{{ if shippingAddress:company }}{{ shippingAddress:company }}<br>{{ /if }}{{ shippingAddress:address1 }}<br>{{ if shippingAddress:address2 }}{{ shippingAddress:address2 }}<br>{{ /if }}{{ shippingAddress:city }} {{ shippingAddress:zip }}<br>{{ shippingAddress:country }}</address>
+                </div>
+            {{ /if }}
+            {{ if billingAddress }}
+                <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 text-sm leading-relaxed">
+                    <p class="eyebrow">Billing</p>
+                    <address class="mt-3 not-italic">{{ billingAddress:name }}<br>{{ if billingAddress:company }}{{ billingAddress:company }}<br>{{ /if }}{{ billingAddress:address1 }}<br>{{ if billingAddress:address2 }}{{ billingAddress:address2 }}<br>{{ /if }}{{ billingAddress:city }} {{ billingAddress:zip }}<br>{{ billingAddress:country }}</address>
+                </div>
+            {{ /if }}
+        </div>
+    {{ /if }}
+
+    {{ partial:partials/under_the_hood title="the order page" }}
+        <p>The order's ID comes from the URL, so <code>@{{ shopify:customer:order }}</code> checks with Shopify that the order belongs to the logged in customer before showing anything. Anyone else's order (try changing the number in the address bar) gets <code>not_found</code>. The amounts are in the currency the order was paid in, formatted by the addon's <code>shopify_money</code> modifier.</p>
+        {{ slot:code }}
+@{{ shopify:customer:order :id="segment_3" }}
+    @{{ if not_found }}
+        We couldn't find that order.
+    @{{ else }}
+        @{{ name }} · @{{ displayFulfillmentStatus }}
+        @{{ lineItems:nodes }}
+            @{{ quantity }} × @{{ title }}: @{{ discountedUnitPriceSet:presentmentMoney | shopify_money }}
+        @{{ /lineItems:nodes }}
+        Total: @{{ totalPriceSet:presentmentMoney | shopify_money }}
+    @{{ /if }}
+@{{ /shopify:customer:order }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}
+{{ /shopify:customer:order }}
