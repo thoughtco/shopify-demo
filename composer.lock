@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4ff53ca672a46e46ab5aebeba75aef48",
+    "content-hash": "1d212a156609fcfeca0e54aaa0ee2846",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/cart-discount-codes",
+            "version": "v9.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "aa353db"
+                "reference": "9047a8ef81f433ba685b5d191cd3faef1e8d3730"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/aa353db",
-                "reference": "aa353db",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/9047a8ef81f433ba685b5d191cd3faef1e8d3730",
+                "reference": "9047a8ef81f433ba685b5d191cd3faef1e8d3730",
                 "shasum": ""
             },
             "require": {
@@ -9287,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/cart-discount-codes"
+                "source": "https://github.com/thoughtco/shopify/tree/v9.1.0"
             },
-            "time": "2026-11-25T08:33:21+00:00",
-            "published-time": "2026-11-25T08:33:26+00:00"
+            "time": "2026-11-25T08:36:33+00:00",
+            "published-time": "2026-11-25T08:39:08+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12696,18 +12696,9 @@
             "published-time": "2025-12-08T11:19:39+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "thoughtco/shopify",
-            "version": "dev-feature/cart-discount-codes",
-            "alias": "9.1.0",
-            "alias_normalized": "9.1.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "thoughtco/shopify": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

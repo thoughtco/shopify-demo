@@ -14,7 +14,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "statamic/cms": "^6.0",
-        "thoughtco/shopify": "dev-feature/cart-discount-codes#aa353db as 9.1.0"
+        "thoughtco/shopify": "^9.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
