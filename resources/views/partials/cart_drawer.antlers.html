@@ -70,8 +70,18 @@
         </div>
 
         <div x-show="cart.lineItems.length" class="border-t border-ink/8 px-6 py-6">
+            <dl class="mb-3 space-y-1 text-sm" x-show="cart.discount">
+                <div class="flex justify-between">
+                    <dt class="text-stone">Items</dt>
+                    <dd x-text="cart.itemsSubtotal"></dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-stone">Discount</dt>
+                    <dd x-text="'−' + cart.discount"></dd>
+                </div>
+            </dl>
             <div class="flex items-baseline justify-between">
-                <span class="text-sm text-stone">Subtotal</span>
+                <span class="text-sm text-stone" x-text="cart.discount ? 'Total' : 'Subtotal'"></span>
                 <span class="font-serif text-2xl" x-text="cart.subtotal"></span>
             </div>
             <p class="mt-1 text-xs text-stone">Shipping and taxes are worked out by Shopify at checkout.</p>

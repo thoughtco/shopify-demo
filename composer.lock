@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ce90d715633969e0a9a511969c3550f9",
+    "content-hash": "4ff53ca672a46e46ab5aebeba75aef48",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -5473,16 +5473,16 @@
         },
         {
             "name": "statamic/cms",
-            "version": "v6.43.2",
+            "version": "v6.44.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/statamic/cms.git",
-                "reference": "9269f2cc1ab7474ba32e0bc96c4ab0b0eb677e3f"
+                "reference": "dad88809575288c18cba8f18b2925c7130e45571"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/statamic/cms/zipball/9269f2cc1ab7474ba32e0bc96c4ab0b0eb677e3f",
-                "reference": "9269f2cc1ab7474ba32e0bc96c4ab0b0eb677e3f",
+                "url": "https://api.github.com/repos/statamic/cms/zipball/dad88809575288c18cba8f18b2925c7130e45571",
+                "reference": "dad88809575288c18cba8f18b2925c7130e45571",
                 "shasum": ""
             },
             "require": {
@@ -5519,7 +5519,8 @@
                 "wilderborn/partyline": "^1.0"
             },
             "conflict": {
-                "algolia/algoliasearch-client-php": "<4.32"
+                "algolia/algoliasearch-client-php": "<4.32",
+                "statamic/eloquent-driver": "<5.14.0"
             },
             "require-dev": {
                 "algolia/algoliasearch-client-php": "^4.32",
@@ -5581,7 +5582,7 @@
             ],
             "support": {
                 "issues": "https://github.com/statamic/cms/issues",
-                "source": "https://github.com/statamic/cms/tree/v6.43.2"
+                "source": "https://github.com/statamic/cms/tree/v6.44.0"
             },
             "funding": [
                 {
@@ -5589,8 +5590,8 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-23T21:14:15+00:00",
-            "published-time": "2026-11-23T21:14:24+00:00"
+            "time": "2026-11-24T18:57:35+00:00",
+            "published-time": "2026-11-24T18:57:46+00:00"
         },
         {
             "name": "statamic/stringy",
@@ -9222,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "v9.0.1",
+            "version": "dev-feature/cart-discount-codes",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "3fea1c0dae9f9288ae3353a223325a93871b074b"
+                "reference": "aa353db"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/3fea1c0dae9f9288ae3353a223325a93871b074b",
-                "reference": "3fea1c0dae9f9288ae3353a223325a93871b074b",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/aa353db",
+                "reference": "aa353db",
                 "shasum": ""
             },
             "require": {
@@ -9286,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/v9.0.1"
+                "source": "https://github.com/thoughtco/shopify/tree/feature/cart-discount-codes"
             },
-            "time": "2026-11-24T18:49:23+00:00",
-            "published-time": "2026-11-24T18:50:11+00:00"
+            "time": "2026-11-25T08:33:21+00:00",
+            "published-time": "2026-11-25T08:33:26+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12695,9 +12696,18 @@
             "published-time": "2025-12-08T11:19:39+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "thoughtco/shopify",
+            "version": "dev-feature/cart-discount-codes",
+            "alias": "9.1.0",
+            "alias_normalized": "9.1.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "thoughtco/shopify": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
