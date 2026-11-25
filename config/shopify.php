@@ -90,6 +90,18 @@ return [
     'money_format' => env('SHOPIFY_MONEY_FORMAT', 'symbol'),
 
     /**
+     * Storefront cart options for the bundled cart JS.
+     *
+     * buyer_identity: pre-fill Shopify's checkout for a logged in user linked to a
+     * Shopify customer (email, phone and default address). {{ shopify:tokens }} then
+     * tells the cart JS to fetch them from /!/shopify/buyer (never cached) and add
+     * them to the cart's buyerIdentity, so no personal data is put in your pages.
+     */
+    'cart' => [
+        'buyer_identity' => env('SHOPIFY_CART_BUYER_IDENTITY', false),
+    ],
+
+    /**
      * Asset Container to Store the imported Assets
      */
     'asset' => [
