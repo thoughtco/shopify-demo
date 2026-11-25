@@ -1,5 +1,6 @@
 import { addGiftCardCodes, addLines, getBuyerIdentity, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, setDeliveryAddress, updateBuyerCountry, updateBuyerIdentity, updateDiscountCodes, updateLineQuantity } from './cart.js';
 import { cartStorageKey, formatMoney } from './money.js';
+import { sellingPlanLabel, sellingPlanPrice, sellingPlansForVariant } from './selling-plans.js';
 
 const createStore = (Alpine) => {
     Alpine.store('statamic.shopify.cart', {
@@ -201,6 +202,14 @@ const createStore = (Alpine) => {
                     currencyCode: currencyCode,
                     image: line.merchandise?.image?.url,
                     attributes: attrs,
+                    // subscriptions: the line's selling plan ({ id, name, label }), or null for one-off purchases.
+                    // Show `label` (its options, e.g. "Deliver every 2 months"): the name can include the
+                    // discount in the shop's currency.
+                    sellingPlan: line.sellingPlanAllocation?.sellingPlan ? {
+                        id: line.sellingPlanAllocation.sellingPlan.id,
+                        name: line.sellingPlanAllocation.sellingPlan.name,
+                        label: sellingPlanLabel(line.sellingPlanAllocation.sellingPlan),
+                    } : null,
                 });
             }
 
@@ -243,7 +252,7 @@ const createStore = (Alpine) => {
 }
 
 const createData = (Alpine) => {
-    Alpine.data('shopifyProduct', (options, variants) => ({
+    Alpine.data('shopifyProduct', (options, variants, sellingPlans = null) => ({
         added: false,
         customAttributes: {},
         options: options,
@@ -251,6 +260,12 @@ const createData = (Alpine) => {
         selectedVariant: false,
         variants: variants,
         variantEl: null,
+
+        // subscriptions, from {{ shopify:selling_plans }}: { requires_selling_plan, groups }
+        sellingPlanGroups: sellingPlans?.groups ?? [],
+        requiresSellingPlan: Boolean(sellingPlans?.requires_selling_plan),
+        purchaseType: sellingPlans?.requires_selling_plan ? 'subscription' : 'one_time',
+        sellingPlanId: null,
 
         // markets mode: the active market, kept by the cart store (it follows shopify.updateMarket)
         get market() {
@@ -278,6 +293,12 @@ const createData = (Alpine) => {
             for (const [key, value] of Object.entries(options)) {
                 this.selected[key] = this.selectedVariant[key];
             }
+
+            if (this.purchaseType === 'subscription') {
+                this.sellingPlanId = this.availableSellingPlans()[0]?.id ?? null;
+            }
+
+            this.$watch?.('selectedVariant', () => this.syncPurchaseType());
         },
 
         allOptionsSelected() {
@@ -315,6 +336,13 @@ const createData = (Alpine) => {
 
             let qty = parseInt(this.$refs.qty.value);
 
+            // products that require a selling plan can't be bought without one
+            if (! this.sellingPlanSatisfied()) {
+                return;
+            }
+
+            const sellingPlanId = this.currentSellingPlan()?.id;
+
             let cart = await getOrCreateCart(Alpine.store('statamic.shopify.cart').cartId);
 
             // the error has been reported with a shopify.cart.error event
@@ -322,11 +350,17 @@ const createData = (Alpine) => {
                 return;
             }
 
-            let response = await addLines(cart.id, [{
+            let line = {
                 attributes: attributes,
                 merchandiseId: "gid://shopify/ProductVariant/" + variantId,
                 quantity: qty,
-            }]);
+            };
+
+            if (sellingPlanId) {
+                line.sellingPlanId = sellingPlanId;
+            }
+
+            let response = await addLines(cart.id, [line]);
 
             if (! response) {
                 return;
@@ -355,6 +389,93 @@ const createData = (Alpine) => {
             const marketData = this.getMarketData(variant);
             const qty = marketData ? marketData.inventory_quantity : variant.inventory_quantity;
             return variant.inventory_policy && (variant.inventory_policy.toLowerCase() == 'deny') && (qty <= 0);
+        },
+
+        /**
+         * The selling plans the selected variant can be bought on.
+         */
+        availableSellingPlans(variant = null) {
+            return sellingPlansForVariant(this.sellingPlanGroups, variant ?? this.selectedVariant);
+        },
+
+        hasSellingPlans(variant = null) {
+            return this.availableSellingPlans(variant).length > 0;
+        },
+
+        /**
+         * Switch between 'one_time' and 'subscription'. Products that require a
+         * selling plan stay on 'subscription'.
+         */
+        setPurchaseType(type) {
+            this.purchaseType = this.requiresSellingPlan ? 'subscription' : type;
+
+            if (this.purchaseType === 'subscription' && ! this.currentSellingPlan()) {
+                this.sellingPlanId = this.availableSellingPlans()[0]?.id ?? null;
+            }
+        },
+
+        /**
+         * Back to a one-off purchase when the selected variant has no plans (and the
+         * product doesn't require one), so it isn't added one-off while 'subscription'
+         * is still selected. Runs when the selected variant changes.
+         */
+        syncPurchaseType() {
+            if (this.purchaseType === 'subscription' && ! this.requiresSellingPlan && ! this.hasSellingPlans()) {
+                this.purchaseType = 'one_time';
+                this.sellingPlanId = null;
+            }
+        },
+
+        selectSellingPlan(id) {
+            this.sellingPlanId = id || null;
+
+            if (this.sellingPlanId) {
+                this.purchaseType = 'subscription';
+            }
+        },
+
+        /**
+         * The plan that will be added to the cart: the chosen one if the selected
+         * variant can use it, else the variant's first plan. Null for one-off purchases.
+         */
+        currentSellingPlan() {
+            if (this.purchaseType !== 'subscription') {
+                return null;
+            }
+
+            const plans = this.availableSellingPlans();
+
+            return plans.find(plan => plan.id === this.sellingPlanId) ?? plans[0] ?? null;
+        },
+
+        /**
+         * False when the product requires a selling plan but the variant has none to use.
+         */
+        sellingPlanSatisfied() {
+            return ! this.requiresSellingPlan || Boolean(this.currentSellingPlan());
+        },
+
+        /**
+         * A variant's price on a plan (defaults to the selected variant and plan), as a
+         * number. In markets mode this is the exact market price imported for the plan;
+         * without one, fixed amount adjustments are in the shop's currency, so a market's
+         * price only has percentage discounts applied (null otherwise).
+         */
+        getSellingPlanPrice(plan = null, variant = null) {
+            plan = plan ?? this.currentSellingPlan();
+            variant = variant ?? this.selectedVariant;
+
+            if (! plan || ! variant) {
+                return null;
+            }
+
+            const inMarket = Boolean(this.getMarketData(variant)?.price);
+
+            return sellingPlanPrice(plan, this.getVariantPrice(variant), {
+                inShopCurrency: ! inMarket,
+                variant,
+                market: this.market,
+            });
         },
 
         variantExistsAndIsInStock() {

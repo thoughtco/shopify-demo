@@ -183,3 +183,11 @@ tabs:
               listable: hidden
               instructions_position: above
               visibility: read_only
+          -
+            handle: selling_plan_ids
+            field:
+              display: 'Selling Plans'
+              type: hidden
+              icon: hidden
+              listable: hidden
+              instructions_position: above

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "faf7d2a2c95382860c6d447ee5251c64",
+    "content-hash": "400e8cad2c9aa03daf5e352b174b82aa",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/cart-buyer-identity",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "86bb0b6"
+                "reference": "42c2a5534a285da2c80da548f769520a580eaf92"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/86bb0b6",
-                "reference": "86bb0b6",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/42c2a5534a285da2c80da548f769520a580eaf92",
+                "reference": "42c2a5534a285da2c80da548f769520a580eaf92",
                 "shasum": ""
             },
             "require": {
@@ -9252,6 +9252,7 @@
                 "phpunit/phpunit": "^11.0 || ^12.0",
                 "spatie/laravel-ray": "*"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -9287,10 +9288,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/cart-buyer-identity"
+                "source": "https://github.com/thoughtco/shopify/tree/main"
             },
-            "time": "2026-11-25T09:28:39+00:00",
-            "published-time": "2026-11-25T09:28:45+00:00"
+            "time": "2026-11-25T10:44:17+00:00",
+            "published-time": "2026-11-25T10:44:22+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12699,7 +12700,7 @@
     "aliases": [
         {
             "package": "thoughtco/shopify",
-            "version": "dev-feature/cart-buyer-identity",
+            "version": "dev-main",
             "alias": "9.2.0",
             "alias_normalized": "9.2.0.0"
         }

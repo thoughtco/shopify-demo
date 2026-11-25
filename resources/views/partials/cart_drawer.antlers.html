@@ -52,6 +52,7 @@
                                 <div>
                                     <p class="font-medium" x-text="item.title"></p>
                                     <p class="text-sm text-stone" x-show="item.variant.title !== 'Default Title'" x-text="item.variant.title"></p>
+                                    <p class="mt-1 inline-flex items-center gap-1.5 rounded-full bg-sage/15 px-2.5 py-0.5 text-xs text-sage" x-show="item.sellingPlan" x-text="item.sellingPlan?.label"></p>
                                 </div>
                                 <p class="text-sm" x-text="item.subtotal"></p>
                             </div>
