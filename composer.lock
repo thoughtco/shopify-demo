@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "400e8cad2c9aa03daf5e352b174b82aa",
+    "content-hash": "f6c05c7aebe9d452f4b7bd2ed3ba426d",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,7 +9223,7 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-main",
+            "version": "v9.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
@@ -9252,7 +9252,6 @@
                 "phpunit/phpunit": "^11.0 || ^12.0",
                 "spatie/laravel-ray": "*"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -9288,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/main"
+                "source": "https://github.com/thoughtco/shopify/tree/v9.2.0"
             },
             "time": "2026-11-25T10:44:17+00:00",
-            "published-time": "2026-11-25T10:44:22+00:00"
+            "published-time": "2026-11-26T07:21:56+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12697,18 +12696,9 @@
             "published-time": "2025-12-08T11:19:39+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "thoughtco/shopify",
-            "version": "dev-main",
-            "alias": "9.2.0",
-            "alias_normalized": "9.2.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "thoughtco/shopify": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
