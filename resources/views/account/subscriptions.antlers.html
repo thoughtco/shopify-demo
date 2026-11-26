@@ -1,7 +1,17 @@
+{{# ?show=current (the default: active and paused), ended (cancelled, expired or failed) or all #}}
+{{ show = get:show ?? 'current' }}
+{{ statuses = show == 'ended' ? 'cancelled|expired|failed' : (show == 'all' ? '' : 'active|paused') }}
+
 {{ partial:partials/account/shell }}
-    {{ shopify:customer:subscriptions }}
+    <nav class="flex flex-wrap gap-2" aria-label="Filter subscriptions">
+        <a href="?show=current" class="chip {{ show == 'current' ?= 'bg-ink text-ivory' }}" {{ show == 'current' ?= 'aria-current="page"' }}>Current</a>
+        <a href="?show=ended" class="chip {{ show == 'ended' ?= 'bg-ink text-ivory' }}" {{ show == 'ended' ?= 'aria-current="page"' }}>Ended</a>
+        <a href="?show=all" class="chip {{ show == 'all' ?= 'bg-ink text-ivory' }}" {{ show == 'all' ?= 'aria-current="page"' }}>All</a>
+    </nav>
+
+    {{ shopify:customer:subscriptions :status="statuses" }}
         {{ if subscriptions_count }}
-            <p class="text-stone">{{ subscriptions_count }} {{ subscriptions_count == 1 ? 'subscription' : 'subscriptions' }}, newest first.</p>
+            <p class="text-stone">{{ subscriptions_count }} {{ show == 'ended' ? 'ended ' : (show == 'current' ? 'current ' : '') }}{{ subscriptions_count == 1 ? 'subscription' : 'subscriptions' }}, newest first.</p>
 
             <ul class="space-y-4">
                 {{ subscriptions }}
@@ -35,8 +45,13 @@
             <p class="text-sm text-stone">To pause, skip or cancel a subscription, use <a href="https://{{ config:shopify:url }}/account" class="link-underline" target="_blank" rel="noopener">your account in Shopify</a>.</p>
         {{ else }}
             <div class="rounded-3xl bg-sand px-6 py-12 text-center">
-                <p class="font-serif text-2xl">No subscriptions yet</p>
-                <p class="mt-2 text-stone">Choose Subscribe on a product and it shows up here.</p>
+                {{ if show == 'ended' }}
+                    <p class="font-serif text-2xl">No ended subscriptions</p>
+                    <p class="mt-2 text-stone">Cancelled subscriptions show up here.</p>
+                {{ else }}
+                    <p class="font-serif text-2xl">No {{ show == 'current' ?= 'current ' }}subscriptions</p>
+                    <p class="mt-2 text-stone">Choose Subscribe on a product and it shows up here.</p>
+                {{ /if }}
                 <a href="/products/gold-bird-necklace" class="btn btn-primary mt-6">See a subscription product</a>
             </div>
         {{ /if }}
@@ -45,8 +60,9 @@
     {{ partial:partials/under_the_hood title="subscriptions" }}
         <p>Shopify only lets the app that created a subscription read it, so the addon can't ask Shopify Subscriptions for them. Instead, <code>@{{ shopify:customer:subscriptions }}</code> finds the orders that started a subscription (tagged <code>Subscription First Order</code>) and lists the subscription items on them.</p>
         <p>The status and next order date come from two Shopify Flow workflows that come with the addon: whenever a subscription is created or changes, they write it onto its first order as a metafield, which the tag reads. Without them, you'd still see the subscriptions, just not their status.</p>
+        <p>The filters pass <code>status</code> to the tag: <strong>Current</strong> is <code>active|paused</code>, so cancelled subscriptions are left out.</p>
         {{ slot:code }}
-@{{ shopify:customer:subscriptions }}
+@{{ shopify:customer:subscriptions status="active|paused" }}
     @{{ subscriptions }}
         @{{ sellingPlan:name }} · @{{ status }}
         @{{ if nextBillingDate }}Next order @{{ nextBillingDate | format('j F Y') }}@{{ /if }}
