@@ -127,10 +127,16 @@ const reportError = (name, errors) => {
 };
 
 /**
- * Run an operation and return data[name], or undefined (after reporting) when the
- * request fails, returns GraphQL errors or the mutation returns userErrors.
+ * Run an operation and return data[name], or undefined (after reporting, unless
+ * `report` is false) when the request fails, returns GraphQL errors or the mutation
+ * returns userErrors.
  */
-const run = async (name, query, variables = {}) => {
+const run = async (name, query, variables = {}, { report = true } = {}) => {
+    const fail = (errors) => {
+        if (report) {
+            reportError(name, errors);
+        }
+    };
     const country = marketCountry();
 
     let response;
@@ -138,7 +144,7 @@ const run = async (name, query, variables = {}) => {
     try {
         response = await client.request(query, { variables: country ? { ...variables, country } : variables });
     } catch (error) {
-        reportError(name, [error]);
+        fail([error]);
 
         return;
     }
@@ -146,7 +152,7 @@ const run = async (name, query, variables = {}) => {
     const { data, errors } = response;
 
     if (errors) {
-        reportError(name, errors);
+        fail(errors);
 
         return;
     }
@@ -154,7 +160,7 @@ const run = async (name, query, variables = {}) => {
     const result = data?.[name];
 
     if (result?.userErrors?.length) {
-        reportError(name, result.userErrors);
+        fail(result.userErrors);
 
         return;
     }
@@ -179,7 +185,12 @@ const addLines = async (cartId, lines) => {
     return (await run('cartLinesAdd', query, { cartId, lines }))?.cart;
 };
 
-const createFreshCart = async (cartLines = []) => {
+/**
+ * Create a cart with these lines. `input` takes the rest of a CartInput (buyerIdentity,
+ * discountCodes, attributes, note, delivery); in markets mode the market country is
+ * added to its buyerIdentity.
+ */
+const createFreshCart = async (cartLines = [], input = {}, options = {}) => {
     const query = operation('mutation', 'cartCreate', ['$cartInput: CartInput'], `
       cartCreate(input: $cartInput) {
         cart {
@@ -188,13 +199,44 @@ const createFreshCart = async (cartLines = []) => {
         ${userErrors}
       }`);
 
-    const cartInput = { lines: cartLines };
+    const cartInput = { ...input, lines: cartLines };
 
     if (marketCountry()) {
-        cartInput.buyerIdentity = { countryCode: marketCountry() };
+        cartInput.buyerIdentity = { ...cartInput.buyerIdentity, countryCode: marketCountry() };
     }
 
-    return (await run('cartCreate', query, { cartInput }))?.cart;
+    return (await run('cartCreate', query, { cartInput }, options))?.cart;
+};
+
+/**
+ * Buy now: create a cart just for these lines and go straight to its checkout, where
+ * the store's express checkout buttons (Apple Pay, Google Pay, Shop Pay, PayPal) are.
+ * The cart isn't stored, so the customer's own cart is left as it was.
+ *
+ * options: discountCodes, attributes, note, and `redirect` (default true; false just
+ * returns the cart). The logged in customer's buyer identity is added when the site
+ * provides one (shopify.cart.buyer_identity). Returns the cart, or undefined if it
+ * couldn't be created (reported with the shopify.cart.error event).
+ */
+const buyNow = async (lines, { redirect = true, ...input } = {}) => {
+    let cart;
+    const identity = await getBuyerIdentity();
+
+    if (identity) {
+        const { deliveryAddress, ...buyerIdentity } = identity;
+        const delivery = deliveryAddress ? { addresses: [{ address: { deliveryAddress }, selected: true }] } : undefined;
+
+        cart = await createFreshCart(lines, { ...input, buyerIdentity, ...(delivery ? { delivery } : {}) }, { report: false });
+    }
+
+    // without the buyer identity if Shopify rejected it (e.g. an email it considers invalid)
+    cart ??= await createFreshCart(lines, input);
+
+    if (cart?.checkoutUrl && redirect && typeof window !== 'undefined') {
+        window.location.assign(cart.checkoutUrl);
+    }
+
+    return cart;
 };
 
 const getExistingCart = async (id) => {
@@ -443,6 +485,7 @@ const getBuyerIdentity = async () => {
 export {
     addGiftCardCodes,
     addLines,
+    buyNow,
     createFreshCart,
     getBuyerIdentity,
     getExistingCart,

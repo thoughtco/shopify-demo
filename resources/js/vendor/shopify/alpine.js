@@ -1,4 +1,4 @@
-import { addGiftCardCodes, addLines, getBuyerIdentity, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, setDeliveryAddress, updateBuyerCountry, updateBuyerIdentity, updateDiscountCodes, updateLineQuantity } from './cart.js';
+import { addGiftCardCodes, addLines, buyNow, getBuyerIdentity, getOrCreateCart, removeGiftCardCodes, removeLine, setCartAttributes, setCartNote, setDeliveryAddress, updateBuyerCountry, updateBuyerIdentity, updateDiscountCodes, updateLineQuantity } from './cart.js';
 import { cartStorageKey, formatMoney } from './money.js';
 import { sellingPlanLabel, sellingPlanPrice, sellingPlansForVariant } from './selling-plans.js';
 
@@ -254,6 +254,7 @@ const createStore = (Alpine) => {
 const createData = (Alpine) => {
     Alpine.data('shopifyProduct', (options, variants, sellingPlans = null) => ({
         added: false,
+        buyingNow: false,
         customAttributes: {},
         options: options,
         selected: {},
@@ -322,11 +323,44 @@ const createData = (Alpine) => {
             return [... new Set(vals)];
         },
 
-        async handleSubmit(target) {
-            let variantId = this.variantEl.value;
+        /**
+         * Buy the selected variant straight away: a cart just for it, then its checkout
+         * (with the store's express checkout buttons). The customer's cart isn't touched.
+         * `options` are passed to buyNow() in cart.js (discountCodes, attributes, note).
+         */
+        async buyNow(options = {}) {
+            const line = this.cartLine();
+
+            if (! line || this.buyingNow) {
+                return;
+            }
+
+            this.buyingNow = true;
+
+            const cart = await buyNow([line], options);
+
+            // stays true while the browser goes to checkout
+            if (! cart) {
+                this.buyingNow = false;
+            }
+
+            return cart;
+        },
+
+        /**
+         * The CartLineInput for the selected variant, quantity, custom attributes and
+         * selling plan, or null when there's no variant or a required plan is missing.
+         */
+        cartLine() {
+            let variantId = this.variantEl?.value;
 
             if (! variantId) {
-                return;
+                return null;
+            }
+
+            // products that require a selling plan can't be bought without one
+            if (! this.sellingPlanSatisfied()) {
+                return null;
             }
 
             let attributes = [];
@@ -334,30 +368,33 @@ const createData = (Alpine) => {
                 attributes.push({key: key, value: this.customAttributes[key] + '' });
             }
 
-            let qty = parseInt(this.$refs.qty.value);
-
-            // products that require a selling plan can't be bought without one
-            if (! this.sellingPlanSatisfied()) {
-                return;
-            }
+            let line = {
+                attributes: attributes,
+                merchandiseId: "gid://shopify/ProductVariant/" + variantId,
+                quantity: parseInt(this.$refs.qty?.value ?? 1) || 1,
+            };
 
             const sellingPlanId = this.currentSellingPlan()?.id;
+
+            if (sellingPlanId) {
+                line.sellingPlanId = sellingPlanId;
+            }
+
+            return line;
+        },
+
+        async handleSubmit(target) {
+            const line = this.cartLine();
+
+            if (! line) {
+                return;
+            }
 
             let cart = await getOrCreateCart(Alpine.store('statamic.shopify.cart').cartId);
 
             // the error has been reported with a shopify.cart.error event
             if (! cart) {
                 return;
-            }
-
-            let line = {
-                attributes: attributes,
-                merchandiseId: "gid://shopify/ProductVariant/" + variantId,
-                quantity: qty,
-            };
-
-            if (sellingPlanId) {
-                line.sellingPlanId = sellingPlanId;
             }
 
             let response = await addLines(cart.id, [line]);
