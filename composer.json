@@ -14,7 +14,7 @@
         "laravel/framework": "^13.17",
         "laravel/tinker": "^3.0",
         "statamic/cms": "^6.0",
-        "thoughtco/shopify": "dev-feature/marketing-consent#995c079 as 9.3.0"
+        "thoughtco/shopify": "dev-main#db8db0e as 9.2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
