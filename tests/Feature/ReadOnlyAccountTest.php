@@ -31,6 +31,7 @@ class ReadOnlyAccountTest extends TestCase
             'new address' => ['post', '/!/shopify/address'],
             'edit address' => ['post', '/!/shopify/address/123'],
             'delete address' => ['delete', '/!/shopify/address/123'],
+            'marketing consent' => ['post', '/!/shopify/marketing'],
         ];
     }
 
