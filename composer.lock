@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a6eac2fdc1635eaa603e555a0976995",
+    "content-hash": "4d980747fbc9af40e4a9b4ebd7ead7ed",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/customer-subscriptions",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "c88fd3f"
+                "reference": "db8db0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/c88fd3f",
-                "reference": "c88fd3f",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/db8db0e",
+                "reference": "db8db0e",
                 "shasum": ""
             },
             "require": {
@@ -9252,6 +9252,7 @@
                 "phpunit/phpunit": "^11.0 || ^12.0",
                 "spatie/laravel-ray": "*"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -9287,10 +9288,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/customer-subscriptions"
+                "source": "https://github.com/thoughtco/shopify/tree/main"
             },
-            "time": "2026-11-26T09:32:07+00:00",
-            "published-time": "2026-11-26T09:32:13+00:00"
+            "time": "2026-11-26T12:29:31+00:00",
+            "published-time": "2026-11-26T12:29:37+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12699,9 +12700,9 @@
     "aliases": [
         {
             "package": "thoughtco/shopify",
-            "version": "dev-feature/customer-subscriptions",
-            "alias": "9.3.0",
-            "alias_normalized": "9.3.0.0"
+            "version": "dev-main",
+            "alias": "9.2.0",
+            "alias_normalized": "9.2.0.0"
         }
     ],
     "minimum-stability": "stable",
