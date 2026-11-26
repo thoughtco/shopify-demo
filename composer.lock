@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9a6d04e893605e7391ecb1360df7c9ff",
+    "content-hash": "5a6eac2fdc1635eaa603e555a0976995",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9227,12 +9227,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "e96f4c4"
+                "reference": "c88fd3f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/e96f4c4",
-                "reference": "e96f4c4",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/c88fd3f",
+                "reference": "c88fd3f",
                 "shasum": ""
             },
             "require": {
@@ -9289,8 +9289,8 @@
                 "issues": "https://github.com/thoughtco/shopify/issues",
                 "source": "https://github.com/thoughtco/shopify/tree/feature/customer-subscriptions"
             },
-            "time": "2026-11-26T09:18:59+00:00",
-            "published-time": "2026-11-26T09:19:04+00:00"
+            "time": "2026-11-26T09:32:07+00:00",
+            "published-time": "2026-11-26T09:32:13+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
