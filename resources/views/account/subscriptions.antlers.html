@@ -1,0 +1,80 @@
+{{# ?show=current (the default: active and paused), ended (cancelled, expired or failed) or all #}}
+{{ show = get:show ?? 'current' }}
+{{ statuses = show == 'ended' ? 'cancelled|expired|failed' : (show == 'all' ? '' : 'active|paused') }}
+
+{{ partial:partials/account/shell }}
+    <nav class="flex flex-wrap gap-2" aria-label="Filter subscriptions">
+        <a href="?show=current" class="chip {{ show == 'current' ?= 'bg-ink text-ivory' }}" {{ show == 'current' ?= 'aria-current="page"' }}>Current</a>
+        <a href="?show=ended" class="chip {{ show == 'ended' ?= 'bg-ink text-ivory' }}" {{ show == 'ended' ?= 'aria-current="page"' }}>Ended</a>
+        <a href="?show=all" class="chip {{ show == 'all' ?= 'bg-ink text-ivory' }}" {{ show == 'all' ?= 'aria-current="page"' }}>All</a>
+    </nav>
+
+    {{ shopify:customer:subscriptions :status="statuses" }}
+        {{ if subscriptions_count }}
+            <p class="text-stone">{{ subscriptions_count }} {{ show == 'ended' ? 'ended ' : (show == 'current' ? 'current ' : '') }}{{ subscriptions_count == 1 ? 'subscription' : 'subscriptions' }}, newest first.</p>
+
+            <ul class="space-y-4">
+                {{ subscriptions }}
+                    <li class="rounded-3xl border border-ink/10 bg-white/60 p-5 sm:p-6">
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <p class="font-medium">{{ sellingPlan:name }}</p>
+                            {{ if status }}
+                                <span class="rounded-full px-2.5 py-0.5 text-xs {{ status == 'ACTIVE' ? 'bg-sage/15 text-sage' : (status == 'PAUSED' ? 'bg-gold/15 text-gold-dark' : 'bg-ink/5 text-stone') }}">{{ status | lower | ucfirst }}</span>
+                            {{ /if }}
+                            {{ if nextBillingDate && status == 'ACTIVE' }}
+                                <span class="text-sm text-stone">Next order {{ nextBillingDate | format('j F Y') }}</span>
+                            {{ /if }}
+                            <a href="/account/orders/{{ order:id }}" class="ml-auto text-sm text-stone link-underline">Started with {{ order:name }}, {{ order:createdAt | format('j F Y') }}</a>
+                            {{ if manage_url && status != 'CANCELLED' && status != 'EXPIRED' }}
+                                <a href="{{ manage_url }}" class="btn btn-secondary px-4 py-2" target="_blank" rel="noopener">Manage</a>
+                            {{ /if }}
+                        </div>
+
+                        <ul class="mt-4 divide-y divide-ink/10">
+                            {{ lines }}
+                                <li class="flex items-center gap-4 py-3 first:pt-0 last:pb-0">
+                                    <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-sand">
+                                        {{ if image:url }}<img src="{{ image:url }}" alt="" class="size-full object-cover" loading="lazy">{{ /if }}
+                                    </div>
+                                    <p class="grow">{{ if product:handle }}<a href="/products/{{ product:handle }}" class="link-underline">{{ title }}</a>{{ else }}{{ title }}{{ /if }}</p>
+                                    <p class="text-sm text-stone">{{ quantity }} × {{ discountedUnitPriceSet:presentmentMoney | shopify_money }}</p>
+                                </li>
+                            {{ /lines }}
+                        </ul>
+                    </li>
+                {{ /subscriptions }}
+            </ul>
+
+            <p class="text-sm text-stone">Manage opens the subscriptions page in your Shopify account, where you can pause, skip or cancel. Shopify asks you to sign in there with a code sent to your email, so on this shared demo account you'll only get as far as the sign-in.</p>
+        {{ else }}
+            <div class="rounded-3xl bg-sand px-6 py-12 text-center">
+                {{ if show == 'ended' }}
+                    <p class="font-serif text-2xl">No ended subscriptions</p>
+                    <p class="mt-2 text-stone">Cancelled subscriptions show up here.</p>
+                {{ else }}
+                    <p class="font-serif text-2xl">No {{ show == 'current' ?= 'current ' }}subscriptions</p>
+                    <p class="mt-2 text-stone">Choose Subscribe on a product and it shows up here.</p>
+                {{ /if }}
+                <a href="/products/gold-bird-necklace" class="btn btn-primary mt-6">See a subscription product</a>
+            </div>
+        {{ /if }}
+    {{ /shopify:customer:subscriptions }}
+
+    {{ partial:partials/under_the_hood title="subscriptions" }}
+        <p>Shopify only lets the app that created a subscription read it, so the addon can't ask Shopify Subscriptions for them. Instead, <code>@{{ shopify:customer:subscriptions }}</code> finds the orders that started a subscription (tagged <code>Subscription First Order</code>) and lists the subscription items on them.</p>
+        <p>The status and next order date come from two Shopify Flow workflows that come with the addon: whenever a subscription is created or changes, they write it onto its first order as a metafield, which the tag reads. Without them, you'd still see the subscriptions, just not their status.</p>
+        <p><strong>Manage</strong> links to <code>manage_url</code>, set with <code>SHOPIFY_SUBSCRIPTION_MANAGE_URL</code>: here, Shopify Subscriptions' page in Shopify's customer accounts. Other subscription apps have their own portal, and can use <code>{id}</code> in the URL to link to one subscription.</p>
+        <p>The filters pass <code>status</code> to the tag: <strong>Current</strong> is <code>active|paused</code>, so cancelled subscriptions are left out.</p>
+        {{ slot:code }}
+@{{ shopify:customer:subscriptions status="active|paused" }}
+    @{{ subscriptions }}
+        @{{ sellingPlan:name }} · @{{ status }}
+        @{{ if nextBillingDate }}Next order @{{ nextBillingDate | format('j F Y') }}@{{ /if }}
+        @{{ lines }}@{{ quantity }} × @{{ title }}@{{ /lines }}
+        Started with @{{ order:name }}
+        <a href="@{{ manage_url }}">Manage</a>
+    @{{ /subscriptions }}
+@{{ /shopify:customer:subscriptions }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}
