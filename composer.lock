@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1a2f725c9109ef9c12e3264fa23e2376",
+    "content-hash": "a752cf94241c3d07321c7258278d21f5",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/customer-accounts",
+            "version": "dev-feature/order-tracking-reorder",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "54aff68"
+                "reference": "09bcdf7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/54aff68",
-                "reference": "54aff68",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/09bcdf7",
+                "reference": "09bcdf7",
                 "shasum": ""
             },
             "require": {
@@ -9287,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/customer-accounts"
+                "source": "https://github.com/thoughtco/shopify/tree/feature/order-tracking-reorder"
             },
-            "time": "2026-11-25T13:35:45+00:00",
-            "published-time": "2026-11-25T13:35:51+00:00"
+            "time": "2026-11-26T08:36:55+00:00",
+            "published-time": "2026-11-26T08:37:01+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12699,9 +12699,9 @@
     "aliases": [
         {
             "package": "thoughtco/shopify",
-            "version": "dev-feature/customer-accounts",
-            "alias": "9.2.0",
-            "alias_normalized": "9.2.0.0"
+            "version": "dev-feature/order-tracking-reorder",
+            "alias": "9.3.0",
+            "alias_normalized": "9.3.0.0"
         }
     ],
     "minimum-stability": "stable",

@@ -20,6 +20,29 @@
             {{ /if }}
             <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFinancialStatus | replace('_', ' ') | lower | ucfirst }}</span>
             <a href="{{ statusPageUrl }}" class="ml-auto btn btn-secondary px-4 py-2" target="_blank" rel="noopener">Order status in Shopify</a>
+            {{# Buy again: adds the lines that can still be bought to the bag #}}
+            <div x-data='{
+                lines: {{ lineItems:nodes | where("variant.availableForSale", true) | to_json | entities }},
+                skipped: {{ (lineItems:nodes | count) - (lineItems:nodes | where("variant.availableForSale", true) | count) }},
+                adding: false,
+                added: false,
+                async buyAgain() {
+                    this.adding = true;
+                    const cart = await $store["statamic.shopify.cart"].addItems(this.lines);
+                    this.adding = false;
+
+                    if (cart) {
+                        this.added = true;
+                        $store.drawer.show();
+                    }
+                },
+            }' class="contents">
+                <button type="button" class="btn btn-primary px-4 py-2" :disabled="adding || ! lines.length" @click="buyAgain()">
+                    <span x-show="! added">Buy again</span>
+                    <span x-show="added" x-cloak>Added to your bag ✓</span>
+                </button>
+                <p class="basis-full text-right text-xs text-stone" x-show="skipped" x-cloak x-text="lines.length ? `${skipped} ${skipped == 1 ? 'item is' : 'items are'} no longer available, so ${skipped == 1 ? 'it' : 'they'} won't be added.` : 'None of these items are available any more.'"></p>
+            </div>
         </div>
 
         <div class="grid gap-8 xl:grid-cols-[1fr_20rem]">
@@ -30,7 +53,8 @@
                             {{ if image:url }}<img src="{{ image:url }}" alt="" class="size-full object-cover" loading="lazy">{{ /if }}
                         </div>
                         <div class="grow">
-                            <p class="font-medium">{{ title }}</p>
+                            <p class="font-medium">{{ if product:handle }}<a href="/products/{{ product:handle }}" class="link-underline">{{ title }}</a>{{ else }}{{ title }}{{ /if }}</p>
+                            {{ if sellingPlan }}<p class="text-xs text-sage">Subscription</p>{{ /if }}
                             <p class="text-sm text-stone">{{ quantity }} × {{ discountedUnitPriceSet:presentmentMoney | shopify_money }}</p>
                         </div>
                         {{ if discountedUnitPriceSet:presentmentMoney:amount != originalUnitPriceSet:presentmentMoney:amount }}
@@ -56,6 +80,29 @@
             </div>
         </div>
 
+        {{ if fulfillments }}
+            <section class="rounded-3xl border border-ink/10 bg-white/60 p-6 text-sm" aria-labelledby="shipments-title">
+                <p id="shipments-title" class="eyebrow">{{ (fulfillments | count) == 1 ? 'Shipment' : 'Shipments' }}</p>
+                <ul class="mt-3 divide-y divide-ink/10">
+                    {{ fulfillments }}
+                        <li class="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
+                            <span class="rounded-full px-2.5 py-0.5 text-xs {{ displayStatus == 'DELIVERED' ? 'bg-sage/15 text-sage' : 'bg-ink/5 text-stone' }}">{{ displayStatus | replace('_', ' ') | lower | ucfirst }}</span>
+                            <span class="text-stone">
+                                Sent {{ createdAt | format('j F') }}
+                                {{ if deliveredAt }}· delivered {{ deliveredAt | format('j F') }}{{ elseif estimatedDeliveryAt }}· expected {{ estimatedDeliveryAt | format('j F') }}{{ /if }}
+                            </span>
+                            {{ trackingInfo }}
+                                <span class="ml-auto">
+                                    {{ company }}:
+                                    {{ if url }}<a href="{{ url }}" class="link-underline" target="_blank" rel="noopener">{{ number }}</a>{{ else }}{{ number }}{{ /if }}
+                                </span>
+                            {{ /trackingInfo }}
+                        </li>
+                    {{ /fulfillments }}
+                </ul>
+            </section>
+        {{ /if }}
+
         <div class="grid gap-5 sm:grid-cols-2">
             {{ if shippingAddress }}
                 <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 text-sm leading-relaxed">
@@ -74,6 +121,7 @@
 
     {{ partial:partials/under_the_hood title="the order page" }}
         <p>The order's ID comes from the URL, so <code>@{{ shopify:customer:order }}</code> checks with Shopify that the order belongs to the logged in customer before showing anything. Anyone else's order (try changing the number in the address bar) gets <code>not_found</code>. The amounts are in the currency the order was paid in, formatted by the addon's <code>shopify_money</code> modifier.</p>
+        <p>Shipments come from the order's <code>fulfillments</code>, with Shopify's tracking details. <strong>Buy again</strong> passes the order's line items that can still be bought to the cart store's <code>addItems()</code>, which adds them to your bag with the same quantities, subscriptions and line properties.</p>
         {{ slot:code }}
 @{{ shopify:customer:order :id="segment_3" }}
     @{{ if not_found }}
@@ -84,6 +132,14 @@
             @{{ quantity }} × @{{ title }}: @{{ discountedUnitPriceSet:presentmentMoney | shopify_money }}
         @{{ /lineItems:nodes }}
         Total: @{{ totalPriceSet:presentmentMoney | shopify_money }}
+
+        @{{ fulfillments }}
+            @{{ displayStatus }}
+            @{{ trackingInfo }}@{{ company }}: <a href="@{{ url }}">@{{ number }}</a>@{{ /trackingInfo }}
+        @{{ /fulfillments }}
+
+        <button x-data="{ lines: @{{ lineItems:nodes | where('variant.availableForSale', true) | to_json | entities }} }"
+                @click="$store['statamic.shopify.cart'].addItems(lines)">Buy again</button>
     @{{ /if }}
 @{{ /shopify:customer:order }}
         {{ /slot:code }}
