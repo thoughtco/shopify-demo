@@ -88,6 +88,12 @@
                     planLabel(plan) {
                         return plan?.label ?? plan?.name;
                     },
+                    {{# Variants that don't sell when out of stock can only be bought up to what's left (in the shopper's market) #}}
+                    maxQuantity() {
+                        if (! selectedVariant || selectedVariant.inventory_policy?.toLowerCase() !== 'deny') return null;
+                        const quantity = getMarketData(selectedVariant)?.inventory_quantity ?? selectedVariant.inventory_quantity;
+                        return quantity > 0 ? quantity : null;
+                    },
                     saving() {
                         const subscription = getSellingPlanPrice();
                         const oneOff = selectedVariant ? parseFloat(getVariantPrice(selectedVariant)) : null;
@@ -173,7 +179,7 @@
 
                 <div class="flex gap-3">
                     <label class="sr-only" for="qty">Quantity</label>
-                    <input id="qty" x-ref="qty" type="number" min="1" value="1" class="w-20 rounded-full border border-ink/15 bg-white px-4 text-center">
+                    <input id="qty" x-ref="qty" type="number" min="1" value="1" :max="maxQuantity()" x-effect="maxQuantity() && $el.value > maxQuantity() && ($el.value = maxQuantity())" class="w-20 rounded-full border border-ink/15 bg-white px-4 text-center">
                     <button type="submit" class="btn btn-primary grow" :disabled="! (variantExistsAndIsInStock() && sellingPlanSatisfied())">
                         <span x-show="! added">Add to bag</span>
                         <span x-show="added" x-cloak>Added ✓</span>
