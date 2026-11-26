@@ -15,3 +15,7 @@ tree:
     id: 2f8fcdcf-2136-4756-b02d-ff8779230173
     entry: ded874e1-7823-4fea-940d-c076a096f780
     title: Orders
+  -
+    id: b197fc9f-18dd-47ad-ae3d-05fb67409e1c
+    entry: db8660aa-f22c-487b-a1fd-1e66493b683f
+    title: Subscriptions

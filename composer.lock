@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a752cf94241c3d07321c7258278d21f5",
+    "content-hash": "9a6d04e893605e7391ecb1360df7c9ff",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/order-tracking-reorder",
+            "version": "dev-feature/customer-subscriptions",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "09bcdf7"
+                "reference": "e96f4c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/09bcdf7",
-                "reference": "09bcdf7",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/e96f4c4",
+                "reference": "e96f4c4",
                 "shasum": ""
             },
             "require": {
@@ -9287,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/order-tracking-reorder"
+                "source": "https://github.com/thoughtco/shopify/tree/feature/customer-subscriptions"
             },
-            "time": "2026-11-26T08:36:55+00:00",
-            "published-time": "2026-11-26T08:37:01+00:00"
+            "time": "2026-11-26T09:18:59+00:00",
+            "published-time": "2026-11-26T09:19:04+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12699,7 +12699,7 @@
     "aliases": [
         {
             "package": "thoughtco/shopify",
-            "version": "dev-feature/order-tracking-reorder",
+            "version": "dev-feature/customer-subscriptions",
             "alias": "9.3.0",
             "alias_normalized": "9.3.0.0"
         }
