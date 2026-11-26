@@ -1,0 +1,54 @@
+{{#
+    The fields for the addon's address form, prefilled from an address in context when editing.
+    Shopify's Admin API takes a countryCode and provinceCode (not names).
+    Usage: {{ shopify:address_form ... }}{{ partial:partials/account/address_fields prefix="new" }}{{ /shopify:address_form }}
+#}}
+<div class="grid gap-4 sm:grid-cols-2">
+    <div>
+        <label for="{{ prefix }}-first-name" class="block text-sm font-medium">First name</label>
+        <input id="{{ prefix }}-first-name" name="firstName" value="{{ firstName }}" required autocomplete="given-name" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div>
+        <label for="{{ prefix }}-last-name" class="block text-sm font-medium">Last name</label>
+        <input id="{{ prefix }}-last-name" name="lastName" value="{{ lastName }}" required autocomplete="family-name" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div class="sm:col-span-2">
+        <label for="{{ prefix }}-company" class="block text-sm font-medium">Company <span class="font-normal text-stone">(optional)</span></label>
+        <input id="{{ prefix }}-company" name="company" value="{{ company }}" autocomplete="organization" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div class="sm:col-span-2">
+        <label for="{{ prefix }}-address1" class="block text-sm font-medium">Address</label>
+        <input id="{{ prefix }}-address1" name="address1" value="{{ address1 }}" required autocomplete="address-line1" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+        <input name="address2" value="{{ address2 }}" aria-label="Address line 2" autocomplete="address-line2" class="mt-2 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div>
+        <label for="{{ prefix }}-city" class="block text-sm font-medium">Town or city</label>
+        <input id="{{ prefix }}-city" name="city" value="{{ city }}" required autocomplete="address-level2" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div>
+        <label for="{{ prefix }}-zip" class="block text-sm font-medium">Postcode</label>
+        <input id="{{ prefix }}-zip" name="zip" value="{{ zip }}" required autocomplete="postal-code" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div>
+        <label for="{{ prefix }}-country" class="block text-sm font-medium">Country</label>
+        <div class="relative mt-1.5">
+            <select id="{{ prefix }}-country" name="countryCode" autocomplete="country" class="w-full appearance-none rounded-full border border-ink/15 bg-white py-2.5 pr-10 pl-4">
+                <option value="GB" {{ (! country || country == 'United Kingdom') ?= 'selected' }}>United Kingdom</option>
+                <option value="IE" {{ country == 'Ireland' ?= 'selected' }}>Ireland</option>
+                <option value="US" {{ country == 'United States' ?= 'selected' }}>United States</option>
+            </select>
+            <svg class="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-stone" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
+        </div>
+    </div>
+    <div>
+        <label for="{{ prefix }}-province" class="block text-sm font-medium">County or state code <span class="font-normal text-stone">(if needed)</span></label>
+        <input id="{{ prefix }}-province" name="provinceCode" placeholder="e.g. CA" autocomplete="address-level1" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <div class="sm:col-span-2">
+        <label for="{{ prefix }}-phone" class="block text-sm font-medium">Phone <span class="font-normal text-stone">(optional)</span></label>
+        <input id="{{ prefix }}-phone" type="tel" name="phone" value="{{ phone }}" autocomplete="tel" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+    </div>
+    <label class="flex items-center gap-2 text-sm sm:col-span-2">
+        <input type="checkbox" name="default" value="1" class="accent-ink"> Use as my default address
+    </label>
+</div>

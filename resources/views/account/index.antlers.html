@@ -1,0 +1,62 @@
+{{ partial:partials/account/shell }}
+    {{ shopify:customer }}
+        <p class="text-lg">Hello, <span class="font-medium">{{ current_user:name ?? name }}</span>.</p>
+        <p class="text-stone">From here you can see your details, addresses and orders, all read from Shopify.</p>
+    {{ /shopify:customer }}
+
+    <div class="grid gap-5 md:grid-cols-3">
+        <a href="/account/profile" class="group rounded-3xl border border-ink/10 bg-white/60 p-6 transition hover:border-ink/30">
+            <p class="eyebrow">Profile</p>
+            <p class="mt-3 font-medium">{{ current_user:name }}</p>
+            <p class="truncate text-sm text-stone">{{ current_user:email }}</p>
+            <p class="mt-4 text-sm text-gold-dark group-hover:underline">Edit your details</p>
+        </a>
+
+        {{ shopify:customer:addresses }}
+            <a href="/account/addresses" class="group rounded-3xl border border-ink/10 bg-white/60 p-6 transition hover:border-ink/30">
+                <p class="eyebrow">Addresses</p>
+                {{ if addresses_count }}
+                    {{ addresses limit="1" }}
+                        <p class="mt-3 font-medium">{{ firstName }} {{ lastName }}</p>
+                        <p class="text-sm text-stone">{{ address1 }}, {{ city }}</p>
+                    {{ /addresses }}
+                    <p class="mt-4 text-sm text-gold-dark group-hover:underline">{{ addresses_count }} saved {{ addresses_count == 1 ? 'address' : 'addresses' }}</p>
+                {{ else }}
+                    <p class="mt-3 text-sm text-stone">No saved addresses yet.</p>
+                    <p class="mt-4 text-sm text-gold-dark group-hover:underline">Add an address</p>
+                {{ /if }}
+            </a>
+        {{ /shopify:customer:addresses }}
+
+        {{ shopify:customer:orders paginate="1" sort="created_at:desc" }}
+            <a href="/account/orders" class="group rounded-3xl border border-ink/10 bg-white/60 p-6 transition hover:border-ink/30">
+                <p class="eyebrow">Orders</p>
+                {{ if orders_count }}
+                    {{ orders }}
+                        <p class="mt-3 font-medium">Latest: {{ name }}</p>
+                        <p class="text-sm text-stone">{{ createdAt | format('j F Y') }} · {{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }}</p>
+                    {{ /orders }}
+                    <p class="mt-4 text-sm text-gold-dark group-hover:underline">{{ orders_count }} {{ orders_count == 1 ? 'order' : 'orders' }}</p>
+                {{ else }}
+                    <p class="mt-3 text-sm text-stone">No orders yet.</p>
+                    <p class="mt-4 text-sm text-gold-dark group-hover:underline">Order history</p>
+                {{ /if }}
+            </a>
+        {{ /shopify:customer:orders }}
+    </div>
+
+    {{ partial:partials/under_the_hood title="the account overview" }}
+        <p>Each card is one of the addon's customer tags. They query Shopify's Admin API for the logged in user's linked customer, so they always show what's in Shopify now. The orders card asks for just one order, newest first.</p>
+        {{ slot:code }}
+@{{ shopify:customer }}Hello, @{{ name }}@{{ /shopify:customer }}
+
+@{{ shopify:customer:addresses }}
+    @{{ addresses_count }} saved addresses
+@{{ /shopify:customer:addresses }}
+
+@{{ shopify:customer:orders paginate="1" sort="created_at:desc" }}
+    @{{ orders }}Latest: @{{ name }}@{{ /orders }}
+@{{ /shopify:customer:orders }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}

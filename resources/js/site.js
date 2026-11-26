@@ -74,6 +74,13 @@ Alpine.store('drawer', {
     },
 });
 
+// The bag's lines before discounts, and its subtotal after them (before shipping and taxes).
+// The cart store's `subtotal` is Shopify's total, which includes shipping once the cart has a
+// delivery address (for example when checkout is pre-filled for a logged in customer).
+const bagItemsAmount = (cart) => cart.lineItems.reduce((total, item) => total + item.subtotalAmount, 0);
+window.bagItems = (cart) => cart.formatCurrency(bagItemsAmount(cart), cart.currencyCode);
+window.bagSubtotal = (cart) => cart.formatCurrency(bagItemsAmount(cart) - (cart.discountAmount ?? 0), cart.currencyCode);
+
 // Surface cart errors
 window.addEventListener('shopify.cart.error', (event) => {
     Alpine.store('toast').show(event.detail?.errors?.[0]?.message ?? 'Something went wrong talking to Shopify.');

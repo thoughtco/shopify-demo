@@ -61,7 +61,7 @@ return [
         'class' => null,
 
         'urls' => [
-            //
+            '/account*', // personal data: never cached
         ],
 
     ],

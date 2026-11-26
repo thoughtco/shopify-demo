@@ -1,0 +1,75 @@
+{{ partial:partials/account/shell }}
+    <div class="grid gap-8 xl:grid-cols-2">
+        <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 sm:p-8">
+            <h2 class="font-serif text-2xl">Your details</h2>
+
+            {{ user:profile_form :redirect="current_uri" class="mt-6 space-y-4" }}
+                {{ if success }}<p class="rounded-2xl bg-sage/15 px-4 py-3 text-sm text-sage">Your details have been saved.</p>{{ /if }}
+                {{ if errors }}
+                    <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">{{ errors }}<li>{{ value }}</li>{{ /errors }}</ul>
+                {{ /if }}
+
+                <div>
+                    <label for="profile-name" class="block text-sm font-medium">Name</label>
+                    <input id="profile-name" type="text" name="name" value="{{ old:name ?? current_user:name }}" autocomplete="name" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+                </div>
+                <div>
+                    <label for="profile-email" class="block text-sm font-medium">Email</label>
+                    <input id="profile-email" type="email" name="email" value="{{ old:email ?? current_user:email }}" autocomplete="email" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+                </div>
+                <button type="submit" class="btn btn-primary">Save details</button>
+            {{ /user:profile_form }}
+        </div>
+
+        <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 sm:p-8">
+            <h2 class="font-serif text-2xl">Password</h2>
+
+            {{ user:password_form :redirect="current_uri" class="mt-6 space-y-4" }}
+                {{ if success }}<p class="rounded-2xl bg-sage/15 px-4 py-3 text-sm text-sage">Your password has been changed.</p>{{ /if }}
+                {{ if errors }}
+                    <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">{{ errors }}<li>{{ value }}</li>{{ /errors }}</ul>
+                {{ /if }}
+
+                <div>
+                    <label for="current-password" class="block text-sm font-medium">Current password</label>
+                    <input id="current-password" type="password" name="current_password" autocomplete="current-password" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+                </div>
+                <div>
+                    <label for="new-password" class="block text-sm font-medium">New password</label>
+                    <input id="new-password" type="password" name="password" autocomplete="new-password" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+                </div>
+                <div>
+                    <label for="confirm-password" class="block text-sm font-medium">Confirm new password</label>
+                    <input id="confirm-password" type="password" name="password_confirmation" autocomplete="new-password" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+                </div>
+                <button type="submit" class="btn btn-secondary">Change password</button>
+            {{ /user:password_form }}
+        </div>
+    </div>
+
+    {{ shopify:customer }}
+        <div class="rounded-3xl bg-sand px-6 py-5 text-sm">
+            <p class="eyebrow">In Shopify</p>
+            <dl class="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-[8rem_1fr]">
+                <dt class="text-stone">Customer</dt><dd>{{ shopify_id }}</dd>
+                <dt class="text-stone">Email</dt><dd>{{ email }}</dd>
+            </dl>
+        </div>
+    {{ /shopify:customer }}
+
+    {{ partial:partials/under_the_hood title="profile and Shopify" }}
+        <p>These are Statamic's own <code>@{{ user:profile_form }}</code> and <code>@{{ user:password_form }}</code>. With <code>update_users_in_shopify</code> on, saving the profile updates the linked Shopify customer's name and email too (the <code>update_shopify_user_job</code> config option lets you sync more). The other way round, Shopify's customer webhooks keep the user's link up to date.</p>
+        <p>The panel above reads the customer from Shopify with <code>@{{ shopify:customer }}</code>.</p>
+        {{ slot:code }}
+@{{ user:profile_form }}
+    <input name="name" value="@{{ old:name ?? current_user:name }}">
+    <input name="email" value="@{{ old:email ?? current_user:email }}">
+    <button>Save details</button>
+@{{ /user:profile_form }}
+
+@{{ shopify:customer }}
+    Customer @{{ shopify_id }} · @{{ email }}
+@{{ /shopify:customer }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}

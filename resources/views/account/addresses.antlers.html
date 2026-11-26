@@ -1,0 +1,95 @@
+{{ partial:partials/account/shell }}
+    {{ if {session:message} }}
+        <p class="rounded-2xl bg-sage/15 px-4 py-3 text-sm text-sage">{{ session:message }}</p>
+    {{ /if }}
+    {{ get_errors:all }}
+        <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">{{ messages }}<li>{{ message }}</li>{{ /messages }}</ul>
+    {{ /get_errors:all }}
+
+    <div x-data class="flex items-center justify-between gap-4">
+        <p class="text-stone">Checkout offers these addresses too.</p>
+        <button type="button" class="btn btn-primary shrink-0" @click="$refs.newAddress.showModal()">Add an address</button>
+
+        <dialog x-ref="newAddress" class="m-auto w-[min(40rem,calc(100vw-2rem))] rounded-3xl bg-ivory p-0 text-ink shadow-2xl backdrop:bg-ink/40 backdrop:backdrop-blur-sm" aria-labelledby="new-address-title">
+            <div class="max-h-[85dvh] overflow-y-auto p-6 sm:p-8">
+                <div class="flex items-center justify-between gap-4">
+                    <h2 id="new-address-title" class="font-serif text-2xl">Add an address</h2>
+                    <button type="button" class="rounded-full p-2 text-stone hover:bg-sand" @click="$refs.newAddress.close()" aria-label="Close">
+                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" d="M6 18 18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {{ shopify:address_form :redirect="current_uri" class="mt-6 space-y-5" }}
+                    {{ partial:partials/account/address_fields prefix="new" firstName="" lastName="" company="" address1="" address2="" city="" zip="" country="" phone="" }}
+                    <div class="flex items-center gap-4">
+                        <button type="submit" class="btn btn-primary">Save address</button>
+                        <button type="button" class="text-sm text-stone link-underline" @click="$refs.newAddress.close()">Cancel</button>
+                    </div>
+                {{ /shopify:address_form }}
+            </div>
+        </dialog>
+    </div>
+
+    {{ shopify:customer:addresses }}
+        {{ if addresses_count }}
+            <ul class="grid gap-5 md:grid-cols-2">
+                {{ addresses }}
+                    <li class="rounded-3xl border border-ink/10 bg-white/60 p-6" x-data="{ editing: false }">
+                        <address class="not-italic leading-relaxed">
+                            <span class="font-medium">{{ firstName }} {{ lastName }}</span><br>
+                            {{ if company }}{{ company }}<br>{{ /if }}
+                            {{ address1 }}<br>
+                            {{ if address2 }}{{ address2 }}<br>{{ /if }}
+                            {{ city }}{{ if province }}, {{ province }}{{ /if }} {{ zip }}<br>
+                            {{ country }}
+                            {{ if phone }}<br><span class="text-stone">{{ phone }}</span>{{ /if }}
+                        </address>
+
+                        <div class="mt-5 flex items-center gap-4 text-sm" x-show="! editing">
+                            <button type="button" class="btn btn-secondary px-4 py-2" @click="editing = true">Edit</button>
+                            <form method="POST" action="{{ route:statamic.shopify.address.destroy :id="id" }}">
+                                {{ csrf_field }}
+                                <input type="hidden" name="_method" value="DELETE">
+                                <button type="submit" class="text-stone link-underline">Delete</button>
+                            </form>
+                        </div>
+
+                        <div x-show="editing" x-cloak class="mt-6 border-t border-ink/10 pt-6">
+                            {{ shopify:address_form :address_id="id" :redirect="current_uri" class="space-y-5" }}
+                                {{ partial:partials/account/address_fields :prefix="'edit-' + id" }}
+                                <div class="flex items-center gap-4">
+                                    <button type="submit" class="btn btn-primary">Save address</button>
+                                    <button type="button" class="text-sm text-stone link-underline" @click="editing = false">Cancel</button>
+                                </div>
+                            {{ /shopify:address_form }}
+                        </div>
+                    </li>
+                {{ /addresses }}
+            </ul>
+        {{ else }}
+            <div class="rounded-3xl bg-sand px-6 py-12 text-center">
+                <p class="font-serif text-2xl">No saved addresses yet</p>
+                <p class="mt-2 text-stone">Add one and checkout will offer it.</p>
+            </div>
+        {{ /if }}
+    {{ /shopify:customer:addresses }}
+
+    {{ partial:partials/under_the_hood title="addresses" }}
+        <p><code>@{{ shopify:customer:addresses }}</code> lists the customer's addresses from Shopify, and <code>@{{ shopify:address_form }}</code> posts to the addon's address endpoints, which create, update or delete an address on the logged in user's Shopify customer (never one named in the request). Shopify's checkout offers the same addresses.</p>
+        <p>Delete is a <code>DELETE</code> to <code>/!/shopify/address/{id}</code>. On this demo every change is refused before it reaches Shopify, as everyone shares the account.</p>
+        {{ slot:code }}
+@{{ shopify:customer:addresses }}
+    @{{ addresses }}
+        @{{ firstName }} @{{ lastName }}, @{{ address1 }}, @{{ city }} @{{ zip }}
+
+        @{{ shopify:address_form :address_id="id" redirect="/account/addresses" }}
+            <input name="firstName" value="@{{ firstName }}">
+            …
+            <select name="countryCode">…</select>
+            <button>Save address</button>
+        @{{ /shopify:address_form }}
+    @{{ /addresses }}
+@{{ /shopify:customer:addresses }}
+        {{ /slot:code }}
+    {{ /partial:partials/under_the_hood }}
+{{ /partial:partials/account/shell }}
