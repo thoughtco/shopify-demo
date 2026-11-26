@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5a6eac2fdc1635eaa603e555a0976995",
+    "content-hash": "04fa779378cbbadcc17319d228b32257",
     "packages": [
         {
             "name": "ajthinking/archetype",
@@ -9223,16 +9223,16 @@
         },
         {
             "name": "thoughtco/shopify",
-            "version": "dev-feature/customer-subscriptions",
+            "version": "dev-feature/marketing-consent",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thoughtco/shopify.git",
-                "reference": "c88fd3f"
+                "reference": "995c079"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/c88fd3f",
-                "reference": "c88fd3f",
+                "url": "https://api.github.com/repos/thoughtco/shopify/zipball/995c079",
+                "reference": "995c079",
                 "shasum": ""
             },
             "require": {
@@ -9287,10 +9287,10 @@
             "description": "A Shopify Addon for Statamic",
             "support": {
                 "issues": "https://github.com/thoughtco/shopify/issues",
-                "source": "https://github.com/thoughtco/shopify/tree/feature/customer-subscriptions"
+                "source": "https://github.com/thoughtco/shopify/tree/feature/marketing-consent"
             },
-            "time": "2026-11-26T09:32:07+00:00",
-            "published-time": "2026-11-26T09:32:13+00:00"
+            "time": "2026-11-26T09:43:19+00:00",
+            "published-time": "2026-11-26T09:43:25+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
@@ -12699,7 +12699,7 @@
     "aliases": [
         {
             "package": "thoughtco/shopify",
-            "version": "dev-feature/customer-subscriptions",
+            "version": "dev-feature/marketing-consent",
             "alias": "9.3.0",
             "alias_normalized": "9.3.0.0"
         }

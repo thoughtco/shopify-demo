@@ -22,6 +22,7 @@ class ReadOnlyAccount
         'auth/*',
         'shopify/address',
         'shopify/address/*',
+        'shopify/marketing',
     ];
 
     /**

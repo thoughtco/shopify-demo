@@ -48,11 +48,44 @@
     </div>
 
     {{ shopify:customer }}
+        <div class="rounded-3xl border border-ink/10 bg-white/60 p-6 sm:p-8">
+            <h2 class="font-serif text-2xl">Marketing</h2>
+            <p class="mt-2 text-sm text-stone">Saved to your customer in Shopify, so Shopify Email (or your marketing app) knows what you've agreed to.</p>
+
+            {{ shopify:marketing_form :redirect="current_uri" class="mt-6 space-y-4" }}
+                {{ if {session:message} }}
+                    <p class="rounded-2xl bg-sage/15 px-4 py-3 text-sm text-sage">{{ session:message }}</p>
+                {{ /if }}
+                {{ get_errors:all }}
+                    <ul class="rounded-2xl bg-rose/10 px-4 py-3 text-sm text-rose">{{ messages }}<li>{{ message }}</li>{{ /messages }}</ul>
+                {{ /get_errors:all }}
+
+                <input type="hidden" name="email" value="0">
+                <label class="flex items-start gap-3">
+                    <input type="checkbox" name="email" value="1" class="mt-1 size-4 accent-ink" {{ accepts_email_marketing ?= 'checked' }}>
+                    <span>Email me about new pieces and offers <span class="block text-sm text-stone">{{ email }}</span></span>
+                </label>
+
+                {{ if phone }}
+                    <input type="hidden" name="sms" value="0">
+                    <label class="flex items-start gap-3">
+                        <input type="checkbox" name="sms" value="1" class="mt-1 size-4 accent-ink" {{ accepts_sms_marketing ?= 'checked' }}>
+                        <span>Text me too <span class="block text-sm text-stone">{{ phone }}</span></span>
+                    </label>
+                {{ else }}
+                    <p class="text-sm text-stone">Texts need a phone number on your Shopify customer, so there's no SMS option here.</p>
+                {{ /if }}
+
+                <button type="submit" class="btn btn-secondary">Save preferences</button>
+            {{ /shopify:marketing_form }}
+        </div>
+
         <div class="rounded-3xl bg-sand px-6 py-5 text-sm">
             <p class="eyebrow">In Shopify</p>
             <dl class="mt-3 grid gap-x-8 gap-y-2 sm:grid-cols-[8rem_1fr]">
                 <dt class="text-stone">Customer</dt><dd>{{ shopify_id }}</dd>
                 <dt class="text-stone">Email</dt><dd>{{ email }}</dd>
+                <dt class="text-stone">Email marketing</dt><dd>{{ email_marketing_state | replace('_', ' ') | lower | ucfirst }}</dd>
             </dl>
         </div>
     {{ /shopify:customer }}
@@ -60,6 +93,7 @@
     {{ partial:partials/under_the_hood title="profile and Shopify" }}
         <p>These are Statamic's own <code>@{{ user:profile_form }}</code> and <code>@{{ user:password_form }}</code>. With <code>update_users_in_shopify</code> on, saving the profile updates the linked Shopify customer's name and email too (the <code>update_shopify_user_job</code> config option lets you sync more). The other way round, Shopify's customer webhooks keep the user's link up to date.</p>
         <p>The panel above reads the customer from Shopify with <code>@{{ shopify:customer }}</code>.</p>
+        <p>Marketing uses <code>@{{ shopify:marketing_form }}</code>, which posts to the addon's <code>/!/shopify/marketing</code> endpoint. That updates the logged in customer's email and SMS marketing consent in Shopify; <code>accepts_email_marketing</code> and <code>accepts_sms_marketing</code> on <code>@{{ shopify:customer }}</code> read it back. Each checkbox has a hidden <code>0</code> before it, so unticking it unsubscribes. On this shared demo account the change is refused before it reaches Shopify.</p>
         {{ slot:code }}
 @{{ user:profile_form }}
     <input name="name" value="@{{ old:name ?? current_user:name }}">
@@ -69,6 +103,17 @@
 
 @{{ shopify:customer }}
     Customer @{{ shopify_id }} · @{{ email }}
+
+    @{{ shopify:marketing_form redirect="/account/profile" }}
+        <input type="hidden" name="email" value="0">
+        <label><input type="checkbox" name="email" value="1" @{{ accepts_email_marketing ?= 'checked' }}> Email me</label>
+
+        @{{ if phone }}
+            <input type="hidden" name="sms" value="0">
+            <label><input type="checkbox" name="sms" value="1" @{{ accepts_sms_marketing ?= 'checked' }}> Text me</label>
+        @{{ /if }}
+        <button>Save preferences</button>
+    @{{ /shopify:marketing_form }}
 @{{ /shopify:customer }}
         {{ /slot:code }}
     {{ /partial:partials/under_the_hood }}
