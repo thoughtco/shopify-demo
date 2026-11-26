@@ -1,6 +1,6 @@
 {{#
     The fields for the addon's address form, prefilled from an address in context when editing.
-    Shopify's Admin API takes a countryCode and provinceCode (not names).
+    Shopify's Admin API takes a countryCode and provinceCode (not names); customer:addresses outputs both.
     Usage: {{ shopify:address_form ... }}{{ partial:partials/account/address_fields prefix="new" }}{{ /shopify:address_form }}
 #}}
 <div class="grid gap-4 sm:grid-cols-2">
@@ -42,13 +42,13 @@
     </div>
     <div>
         <label for="{{ prefix }}-province" class="block text-sm font-medium">County or state code <span class="font-normal text-stone">(if needed)</span></label>
-        <input id="{{ prefix }}-province" name="provinceCode" placeholder="e.g. CA" autocomplete="address-level1" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
+        <input id="{{ prefix }}-province" name="provinceCode" value="{{ provinceCode }}" placeholder="e.g. CA" autocomplete="address-level1" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
     </div>
     <div class="sm:col-span-2">
         <label for="{{ prefix }}-phone" class="block text-sm font-medium">Phone <span class="font-normal text-stone">(optional)</span></label>
         <input id="{{ prefix }}-phone" type="tel" name="phone" value="{{ phone }}" autocomplete="tel" class="mt-1.5 w-full rounded-full border border-ink/15 bg-white px-4 py-2.5">
     </div>
     <label class="flex items-center gap-2 text-sm sm:col-span-2">
-        <input type="checkbox" name="default" value="1" class="accent-ink"> Use as my default address
+        <input type="checkbox" name="default" value="1" class="accent-ink" {{ default ?= 'checked' }}> Use as my default address
     </label>
 </div>

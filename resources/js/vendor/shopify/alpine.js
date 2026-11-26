@@ -14,6 +14,8 @@ const createStore = (Alpine) => {
         giftCards: [],
         itemsSubtotal: null,
         itemsSubtotalAmount: null,
+        itemsTotal: null,
+        itemsTotalAmount: null,
         lineItems: [],
         market: window.shopifyConfig?.market,
         note: '',
@@ -41,18 +43,22 @@ const createStore = (Alpine) => {
             });
         },
 
-        // shopifyConfig.buyerIdentityUrl: pre-fill checkout for a logged in customer, once per cart
+        // shopifyConfig.buyerIdentityUrl: pre-fill checkout for a logged in customer, once per
+        // cart (and per market, in markets mode: the address must be in the market's country)
         async applyBuyerIdentity() {
             const key = cartStorageKey() + ':buyer';
+            const country = window.shopifyConfig?.country || null;
+            const marker = this.cartId + (country ? `|${country}` : '');
 
-            if (! window.shopifyConfig?.buyerIdentityUrl || ! this.cartId || this.buyerIdentityCartId === this.cartId) {
+            if (! window.shopifyConfig?.buyerIdentityUrl || ! this.cartId || this.buyerIdentityCartId === marker) {
                 return;
             }
 
-            const cartId = this.buyerIdentityCartId = this.cartId;
+            const cartId = this.cartId;
+            this.buyerIdentityCartId = marker;
 
             try {
-                if (localStorage.getItem(key) === cartId) {
+                if (localStorage.getItem(key) === marker) {
                     return;
                 }
             } catch (error) {}
@@ -68,17 +74,52 @@ const createStore = (Alpine) => {
             const { deliveryAddress, ...buyerIdentity } = identity;
             let response = Object.keys(buyerIdentity).length ? await updateBuyerIdentity(cartId, buyerIdentity) : undefined;
 
-            if (deliveryAddress) {
-                response = await setDeliveryAddress(cartId, deliveryAddress) ?? response;
+            // in markets mode, with no address in this market's country, remove one from another
+            // market: it would move checkout to that market's currency
+            if (deliveryAddress || country) {
+                response = await setDeliveryAddress(cartId, deliveryAddress ?? null) ?? response;
             }
 
             if (response) {
                 try {
-                    localStorage.setItem(key, cartId);
+                    localStorage.setItem(key, marker);
                 } catch (error) {}
 
                 this.updateFromResponse(response);
             }
+        },
+
+        /**
+         * Add several lines to the cart (creating it if needed), e.g. to buy an order again.
+         * Each line takes a `merchandiseId` or `variantId` (or a `variant` with an `id`, like
+         * an order's line items), numeric or a GID; `quantity` (default 1); a `sellingPlanId`
+         * (or `sellingPlan.sellingPlanId`); and `attributes` (or `customAttributes`).
+         * Returns the cart, or undefined if the lines couldn't be added.
+         */
+        async addItems(lines) {
+            const gid = (type, id) => id && ! String(id).startsWith('gid://') ? `gid://shopify/${type}/${id}` : id;
+
+            lines = (lines ?? []).map((line) => {
+                const merchandiseId = gid('ProductVariant', line.merchandiseId ?? line.variantId ?? line.variant?.id);
+                const sellingPlanId = gid('SellingPlan', line.sellingPlanId ?? line.sellingPlan?.sellingPlanId);
+                const attributes = (line.attributes ?? line.customAttributes ?? []).map(({ key, value }) => ({ key, value: value + '' }));
+
+                return {
+                    merchandiseId,
+                    quantity: parseInt(line.quantity ?? 1) || 1,
+                    ...(sellingPlanId ? { sellingPlanId } : {}),
+                    ...(attributes.length ? { attributes } : {}),
+                };
+            }).filter(line => line.merchandiseId);
+
+            if (! lines.length || ! await this.ensureCart()) {
+                return;
+            }
+
+            const cart = await addLines(this.cartId, lines);
+            this.updateFromResponse(cart);
+
+            return cart;
         },
 
         /**
@@ -226,6 +267,11 @@ const createStore = (Alpine) => {
 
             this.discount = discountAmount ? this.formatCurrency(discountAmount, currencyCode) : null;
             this.discountAmount = discountAmount;
+
+            // the lines less their discounts: what to show as the bag's subtotal. `subtotal`
+            // is Shopify's total, which includes shipping once the cart has a delivery address
+            this.itemsTotalAmount = Math.round((mappedLineItems.reduce((total, line) => total + line.subtotalAmount, 0) - discountAmount) * 100) / 100;
+            this.itemsTotal = this.formatCurrency(this.itemsTotalAmount, currencyCode);
             this.discountCodes = (checkout.discountCodes ?? []).map(({ code, applicable }) => ({ code, applicable }));
             this.giftCards = (checkout.appliedGiftCards ?? []).map(card => ({
                 id: card.id,

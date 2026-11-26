@@ -20,7 +20,7 @@
                 </div>
 
                 {{ shopify:address_form :redirect="current_uri" class="mt-6 space-y-5" }}
-                    {{ partial:partials/account/address_fields prefix="new" firstName="" lastName="" company="" address1="" address2="" city="" zip="" country="" phone="" }}
+                    {{ partial:partials/account/address_fields prefix="new" firstName="" lastName="" company="" address1="" address2="" city="" zip="" countryCode="" provinceCode="" phone="" :default="false" }}
                     <div class="flex items-center gap-4">
                         <button type="submit" class="btn btn-primary">Save address</button>
                         <button type="button" class="text-sm text-stone link-underline" @click="$refs.newAddress.close()">Cancel</button>
@@ -35,6 +35,7 @@
             <ul class="grid gap-5 md:grid-cols-2">
                 {{ addresses }}
                     <li class="rounded-3xl border border-ink/10 bg-white/60 p-6" x-data="{ editing: false }">
+                        {{ if default }}<p class="mb-3"><span class="rounded-full bg-ink px-2.5 py-0.5 text-xs text-ivory">Default address</span></p>{{ /if }}
                         <address class="not-italic leading-relaxed">
                             <span class="font-medium">{{ firstName }} {{ lastName }}</span><br>
                             {{ if company }}{{ company }}<br>{{ /if }}
@@ -80,12 +81,16 @@
         {{ slot:code }}
 @{{ shopify:customer:addresses }}
     @{{ addresses }}
+        @{{ if default }}Default address@{{ /if }}
         @{{ firstName }} @{{ lastName }}, @{{ address1 }}, @{{ city }} @{{ zip }}
 
         @{{ shopify:address_form :address_id="id" redirect="/account/addresses" }}
             <input name="firstName" value="@{{ firstName }}">
             …
-            <select name="countryCode">…</select>
+            <select name="countryCode">
+                <option value="GB" @{{ countryCode == 'GB' ?= 'selected' }}>United Kingdom</option>
+                …
+            </select>
             <button>Save address</button>
         @{{ /shopify:address_form }}
     @{{ /addresses }}

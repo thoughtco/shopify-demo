@@ -3,59 +3,21 @@
         {{ if orders_count }}
             <p class="text-stone">{{ orders_count }} {{ orders_count == 1 ? 'order' : 'orders' }}, newest first.</p>
 
-            <ul class="space-y-4">
+            <ul class="space-y-3">
                 {{ orders }}
                     <li>
-                        <details class="group rounded-3xl border border-ink/10 bg-white/60 open:bg-white/80">
-                            <summary class="flex cursor-pointer list-none flex-wrap items-center gap-x-6 gap-y-2 p-5 sm:p-6">
-                                <span class="font-medium">{{ name }}</span>
-                                <span class="text-sm text-stone">{{ createdAt | format('j F Y') }}</span>
-                                {{ if cancelledAt }}
-                                    <span class="rounded-full bg-rose/10 px-2.5 py-0.5 text-xs text-rose">Cancelled</span>
-                                {{ else }}
-                                    <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFulfillmentStatus | replace('_', ' ') | lower | ucfirst }}</span>
-                                {{ /if }}
-                                <span class="ml-auto font-medium">{{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }}</span>
-                                <svg class="size-4 text-stone transition group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd" /></svg>
-                            </summary>
-
-                            <div class="border-t border-ink/10 p-5 sm:p-6">
-                                <ul class="divide-y divide-ink/10">
-                                    {{ lineItems:nodes }}
-                                        <li class="flex items-center gap-4 py-3">
-                                            <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-sand">
-                                                {{ if image:url }}<img src="{{ image:url }}" alt="" class="size-full object-cover" loading="lazy">{{ /if }}
-                                            </div>
-                                            <div class="grow">
-                                                <p>{{ title }}</p>
-                                                <p class="text-sm text-stone">Qty {{ quantity }}</p>
-                                            </div>
-                                            <p class="text-sm">{{ partial:partials/account/money :price="discountedUnitPriceSet:presentmentMoney" }} each</p>
-                                        </li>
-                                    {{ /lineItems:nodes }}
-                                </ul>
-
-                                <div class="mt-5 grid gap-6 text-sm sm:grid-cols-3">
-                                    {{ if shippingAddress }}
-                                        <div>
-                                            <p class="eyebrow">Delivery</p>
-                                            <p class="mt-2 leading-relaxed">{{ shippingAddress:name }}<br>{{ shippingAddress:address1 }}<br>{{ shippingAddress:city }} {{ shippingAddress:zip }}<br>{{ shippingAddress:country }}</p>
-                                        </div>
-                                    {{ /if }}
-                                    <div>
-                                        <p class="eyebrow">Payment</p>
-                                        <dl class="mt-2 space-y-1">
-                                            {{ if discountCodes }}<div class="flex justify-between gap-4"><dt class="text-stone">Discount ({{ discountCodes | join(', ') }})</dt><dd>−{{ partial:partials/account/money :price="totalDiscountsSet:presentmentMoney" }}</dd></div>{{ /if }}
-                                            <div class="flex justify-between gap-4"><dt class="text-stone">Total</dt><dd>{{ partial:partials/account/money :price="totalPriceSet:presentmentMoney" }}</dd></div>
-                                            <div class="flex justify-between gap-4"><dt class="text-stone">Paid</dt><dd>{{ partial:partials/account/money :price="totalReceivedSet:presentmentMoney" }}</dd></div>
-                                        </dl>
-                                    </div>
-                                    <div class="sm:text-right">
-                                        <a href="{{ statusPageUrl }}" class="btn btn-secondary px-4 py-2" target="_blank" rel="noopener">Order status in Shopify</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </details>
+                        <a href="/account/orders/{{ id }}" class="group flex flex-wrap items-center gap-x-6 gap-y-2 rounded-3xl border border-ink/10 bg-white/60 p-5 transition hover:border-ink/30 sm:p-6">
+                            <span class="font-medium">{{ name }}</span>
+                            <span class="text-sm text-stone">{{ createdAt | format('j F Y') }}</span>
+                            {{ if cancelledAt }}
+                                <span class="rounded-full bg-rose/10 px-2.5 py-0.5 text-xs text-rose">Cancelled</span>
+                            {{ else }}
+                                <span class="rounded-full bg-ink/5 px-2.5 py-0.5 text-xs text-stone">{{ displayFulfillmentStatus | replace('_', ' ') | lower | ucfirst }}</span>
+                            {{ /if }}
+                            <span class="hidden text-sm text-stone md:inline">{{ lineItems:nodes | count }} {{ (lineItems:nodes | count) == 1 ? 'item' : 'items' }}</span>
+                            <span class="ml-auto font-medium">{{ totalPriceSet:presentmentMoney | shopify_money }}</span>
+                            <svg class="size-4 text-stone transition group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 0 1 .02-1.06L11.17 10 7.23 6.29a.75.75 0 1 1 1.04-1.08l4.5 4.25a.75.75 0 0 1 0 1.08l-4.5 4.25a.75.75 0 0 1-1.06-.02Z" clip-rule="evenodd" /></svg>
+                        </a>
                     </li>
                 {{ /orders }}
             </ul>
@@ -77,13 +39,13 @@
     {{ /shopify:customer:orders }}
 
     {{ partial:partials/under_the_hood title="order history" }}
-        <p><code>@{{ shopify:customer:orders }}</code> asks Shopify's Admin API for the logged in customer's orders, sorted by Shopify and paginated, fetching only as many as the page needs. Each order has its items, prices in the currency it was paid in, addresses, discount codes, status and a link to Shopify's order status page.</p>
+        <p><code>@{{ shopify:customer:orders }}</code> asks Shopify's Admin API for the logged in customer's orders, sorted by Shopify and paginated, fetching only as many as the page needs. Totals are in the currency each order was paid in, formatted with the <code>shopify_money</code> modifier, and each order links to its own page.</p>
         {{ slot:code }}
 @{{ shopify:customer:orders paginate="5" sort="created_at:desc" }}
     @{{ orders }}
-        @{{ name }} · @{{ createdAt | format('j F Y') }} · @{{ displayFulfillmentStatus }}
-        @{{ lineItems:nodes }}@{{ quantity }} × @{{ title }}@{{ /lineItems:nodes }}
-        <a href="@{{ statusPageUrl }}">Order status</a>
+        <a href="/account/orders/@{{ id }}">@{{ name }}</a>
+        @{{ createdAt | format('j F Y') }} · @{{ displayFulfillmentStatus }}
+        @{{ totalPriceSet:presentmentMoney | shopify_money }}
     @{{ /orders }}
     @{{ paginate }}…@{{ /paginate }}
 @{{ /shopify:customer:orders }}
